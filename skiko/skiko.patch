@@ -1,0 +1,1848 @@
+diff --git a/samples/SkiaAndroidSample/build.gradle.kts b/samples/SkiaAndroidSample/build.gradle.kts
+index 31201e7f..8e033346 100644
+--- a/samples/SkiaAndroidSample/build.gradle.kts
++++ b/samples/SkiaAndroidSample/build.gradle.kts
+@@ -1,7 +1,9 @@
+ buildscript {
+     repositories {
+         google()
++        mavenLocal()
+         mavenCentral()
++
+         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+     }
+ 
+@@ -14,6 +16,7 @@ repositories {
+     mavenLocal()
+     google()
+     mavenCentral()
++
+     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+ }
+ 
+diff --git a/samples/SkiaAwtSample/build.gradle.kts b/samples/SkiaAwtSample/build.gradle.kts
+index e0db2348..0c04ff0f 100644
+--- a/samples/SkiaAwtSample/build.gradle.kts
++++ b/samples/SkiaAwtSample/build.gradle.kts
+@@ -8,6 +8,7 @@ plugins {
+ repositories {
+     mavenLocal()
+     mavenCentral()
++
+     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+ }
+ 
+diff --git a/samples/SkiaAwtSample/settings.gradle.kts b/samples/SkiaAwtSample/settings.gradle.kts
+index f2f98cb1..2b7867be 100644
+--- a/samples/SkiaAwtSample/settings.gradle.kts
++++ b/samples/SkiaAwtSample/settings.gradle.kts
+@@ -1,6 +1,7 @@
+ pluginManagement {
+     repositories {
+         mavenCentral()
++
+         gradlePluginPortal()
+     }
+ 
+diff --git a/samples/SkiaJsSample/build.gradle.kts b/samples/SkiaJsSample/build.gradle.kts
+index 1e36b641..75f1cb39 100644
+--- a/samples/SkiaJsSample/build.gradle.kts
++++ b/samples/SkiaJsSample/build.gradle.kts
+@@ -1,10 +1,11 @@
+ plugins {
+-    kotlin("multiplatform")
++    id("org.jetbrains.kotlin.multiplatform") version "1.9.23-dev-1"
+ }
+ 
+ repositories {
+     mavenLocal()
+     mavenCentral()
++
+     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+ }
+ 
+diff --git a/samples/SkiaJsSample/gradle.properties b/samples/SkiaJsSample/gradle.properties
+index 556af5dc..220b2062 100644
+--- a/samples/SkiaJsSample/gradle.properties
++++ b/samples/SkiaJsSample/gradle.properties
+@@ -1,3 +1,3 @@
+ kotlin.code.style=official
+-kotlin.version=1.9.21
++kotlin.version=1.9.23-dev-1
+ #skiko.composite.build=1
+\ No newline at end of file
+diff --git a/samples/SkiaMultiplatformSample/build.gradle.kts b/samples/SkiaMultiplatformSample/build.gradle.kts
+index 8b019e7c..ca278214 100644
+--- a/samples/SkiaMultiplatformSample/build.gradle.kts
++++ b/samples/SkiaMultiplatformSample/build.gradle.kts
+@@ -14,7 +14,7 @@ buildscript {
+ }
+ 
+ plugins {
+-    kotlin("multiplatform")
++    id("org.jetbrains.kotlin.multiplatform") version "1.9.23-dev-1"
+     id("org.jetbrains.gradle.apple.applePlugin") version "222.3345.143-0.16"
+ }
+ 
+diff --git a/samples/SkiaMultiplatformSample/gradle.properties b/samples/SkiaMultiplatformSample/gradle.properties
+index efd0c5c3..7a2d42d0 100644
+--- a/samples/SkiaMultiplatformSample/gradle.properties
++++ b/samples/SkiaMultiplatformSample/gradle.properties
+@@ -1,4 +1,4 @@
+ kotlin.code.style=official
+ org.gradle.jvmargs=-Xmx3G -XX:MaxMetaspaceSize=512m
+-kotlin.version=1.9.21
++kotlin.version=1.9.23-dev-1
+ #skiko.composite.build=1
+\ No newline at end of file
+diff --git a/skiko/build.gradle.kts b/skiko/build.gradle.kts
+index 3506d0b5..6bb595eb 100644
+--- a/skiko/build.gradle.kts
++++ b/skiko/build.gradle.kts
+@@ -5,18 +5,17 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+ import tasks.configuration.*
+ 
+ plugins {
+-    kotlin("multiplatform")
++    id("org.jetbrains.kotlin.multiplatform")
+     id("org.jetbrains.dokka") version "1.9.10"
+     `maven-publish`
+     signing
+     id("org.gradle.crypto.checksum") version "1.4.0"
+ }
+-
+ apply<WasmImportsGeneratorCompilerPluginSupportPlugin>()
+ apply<WasmImportsGeneratorForTestCompilerPluginSupportPlugin>()
+ 
+-val coroutinesVersion = "1.8.0"
+-val atomicfuVersion = "0.23.2"
++val coroutinesVersion = "1.8.0-KBA-001"
++val atomicfuVersion = "0.23.2-KBA-001"
+ 
+ val skiko = SkikoProperties(rootProject)
+ val buildType = skiko.buildType
+@@ -42,6 +41,10 @@ allprojects {
+ }
+ 
+ repositories {
++    mavenLocal()
++    maven {
++        url = uri("https://mirrors.tencent.com/nexus/repository/maven-public")
++    }
+     mavenCentral()
+ }
+ 
+@@ -128,9 +131,6 @@ kotlin {
+         skikoProjectContext.configureNativeTarget(OS.MacOS, Arch.X64, macosX64())
+         skikoProjectContext.configureNativeTarget(OS.MacOS, Arch.Arm64, macosArm64())
+     }
+-    if (supportNativeLinux) {
+-        skikoProjectContext.configureNativeTarget(OS.Linux, Arch.X64, linuxX64())
+-    }
+     if (supportNativeIosArm64) {
+         skikoProjectContext.configureNativeTarget(OS.IOS, Arch.Arm64, iosArm64())
+     }
+@@ -140,6 +140,9 @@ kotlin {
+     if (supportNativeIosX64) {
+         skikoProjectContext.configureNativeTarget(OS.IOS, Arch.X64, iosX64())
+     }
++    if (supportAllNative) {
++        ohosArm64()
++    }
+ 
+     sourceSets {
+         val commonMain by getting {
+@@ -258,21 +261,12 @@ kotlin {
+                 val nativeTest by creating {
+                     dependsOn(nativeJsTest)
+                 }
+-                if (supportNativeLinux) {
+-                    val linuxMain by creating {
+-                        dependsOn(nativeMain)
+-                    }
+-                    val linuxTest by creating {
+-                        dependsOn(nativeTest)
+-                    }
+-                    val linuxX64Main by getting {
+-                        dependsOn(linuxMain)
+-                    }
+-                    val linuxX64Test by getting {
+-                        dependsOn(linuxTest)
+-                    }
++
++                val ohosArm64Main by getting {
++                    dependsOn(nativeMain)
+                 }
+-                if (supportAnyNativeIos || supportNativeMac) {
++
++                if (supportNativeMac || supportAnyNativeIos) {
+                     val darwinMain by creating {
+                         dependsOn(nativeMain)
+                     }
+@@ -332,6 +326,7 @@ kotlin {
+                         }
+                     }
+                 }
++
+             }
+         }
+     }
+@@ -410,25 +405,14 @@ val emptyJavadocJar by tasks.registering(Jar::class) {
+     archiveClassifier.set("javadoc")
+ }
+ 
++
+ publishing {
+     repositories {
+-        configureEach {
+-            val repoName = name
+-            tasks.register("publishTo${repoName}") {
+-                group = "publishing"
+-                dependsOn(tasks.named("publishAllPublicationsTo${repoName}Repository"))
+-            }
+-        }
+-        maven {
+-            name = "BuildRepo"
+-            url = uri("${rootProject.buildDir}/repo")
+-        }
+         maven {
+-            name = "ComposeRepo"
+-            url = uri(skiko.composeRepoUrl)
++            url = uri(skiko.publishUrl)
+             credentials {
+-                username = skiko.composeRepoUserName
+-                password = skiko.composeRepoKey
++                username = skiko.publishUserName
++                password = skiko.publishKey
+             }
+         }
+     }
+diff --git a/skiko/buildSrc/build.gradle.kts b/skiko/buildSrc/build.gradle.kts
+index fc034238..7cd7535f 100644
+--- a/skiko/buildSrc/build.gradle.kts
++++ b/skiko/buildSrc/build.gradle.kts
+@@ -4,12 +4,16 @@ plugins {
+ 
+ repositories {
+     mavenCentral()
++    maven {
++        url = uri("https://mirrors.tencent.com/nexus/repository/maven-public")
++    }
++
+     gradlePluginPortal()
+ }
+ 
+ dependencies {
+     implementation(kotlin("stdlib"))
+     compileOnly(gradleApi())
+-    implementation(kotlin("gradle-plugin", "1.9.21"))
++    implementation(kotlin("gradle-plugin", "2.0.21-KBA-001"))
+     implementation("de.undercouch:gradle-download-task:5.5.0")
+ }
+diff --git a/skiko/buildSrc/settings.gradle.kts b/skiko/buildSrc/settings.gradle.kts
+index 1442a836..896414b3 100644
+--- a/skiko/buildSrc/settings.gradle.kts
++++ b/skiko/buildSrc/settings.gradle.kts
+@@ -1,6 +1,7 @@
+ pluginManagement {
+     repositories {
+         mavenCentral()
++
+         gradlePluginPortal()
+     }
+ }
+diff --git a/skiko/buildSrc/src/main/kotlin/SkikoProjectContext.kt b/skiko/buildSrc/src/main/kotlin/SkikoProjectContext.kt
+index 651f6abd..06880ded 100644
+--- a/skiko/buildSrc/src/main/kotlin/SkikoProjectContext.kt
++++ b/skiko/buildSrc/src/main/kotlin/SkikoProjectContext.kt
+@@ -66,10 +66,10 @@ internal val Project.isInIdea: Boolean
+     }
+ 
+ val Project.supportAndroid: Boolean
+-    get() = findProperty("skiko.android.enabled") == "true" // || isInIdea
++    get() = false // findProperty("skiko.android.enabled") == "true" // || isInIdea
+ 
+ val Project.supportAwt: Boolean
+-    get() = findProperty("skiko.awt.enabled") == "true" || isInIdea
++    get() = false // findProperty("skiko.awt.enabled") == "true" || isInIdea
+ 
+ val Project.supportAllNative: Boolean
+     get() = findProperty("skiko.native.enabled") == "true" || isInIdea
+@@ -90,16 +90,16 @@ val Project.supportAnyNativeIos: Boolean
+     get() = supportAllNativeIos || supportNativeIosArm64 || supportNativeIosSimulatorArm64 || supportNativeIosX64
+ 
+ val Project.supportNativeMac: Boolean
+-    get() = supportAllNative || findProperty("skiko.native.mac.enabled") == "true" || isInIdea
++    get() = false // supportAllNative || findProperty("skiko.native.mac.enabled") == "true" || isInIdea
+ 
+ val Project.supportNativeLinux: Boolean
+-    get() = supportAllNative || findProperty("skiko.native.linux.enabled") == "true" || isInIdea
++    get() = false // supportAllNative || findProperty("skiko.native.linux.enabled") == "true" || isInIdea
+ 
+ val Project.supportAnyNative: Boolean
+     get() = supportAllNative || supportAnyNativeIos || supportNativeMac || supportNativeLinux
+ 
+ val Project.supportWasm: Boolean
+-    get() = findProperty("skiko.wasm.enabled") == "true" || isInIdea
++    get() = false // findProperty("skiko.wasm.enabled") == "true" || isInIdea
+ 
+ val Project.supportJs: Boolean
+-    get() = findProperty("skiko.js.enabled") == "true" || supportWasm || isInIdea
+\ No newline at end of file
++    get() = false // findProperty("skiko.js.enabled") == "true" || supportWasm || isInIdea
+\ No newline at end of file
+diff --git a/skiko/buildSrc/src/main/kotlin/properties.kt b/skiko/buildSrc/src/main/kotlin/properties.kt
+index 5f62da04..00369fad 100644
+--- a/skiko/buildSrc/src/main/kotlin/properties.kt
++++ b/skiko/buildSrc/src/main/kotlin/properties.kt
+@@ -162,15 +162,17 @@ class SkikoProperties(private val myProject: Project) {
+                 ?: System.getProperty("skia.dir")
+                 ?: myProject.findProperty("skia.dir")?.toString()
+             )?.let { File(it) }?.takeIf { it.isDirectory }
++    val publishUrl: String
++        get() = System.getProperty("publishUrl")
++            ?: (myProject.findProperty("publishUrl") as? String) ?: ""
+ 
+-    val composeRepoUrl: String
+-        get() = System.getenv("COMPOSE_REPO_URL") ?: "https://maven.pkg.jetbrains.space/public/p/compose/dev"
++    val publishUserName: String?
++        get() = System.getProperty("publishUserName")
++            ?: (myProject.findProperty("publishUserName") as? String)
+ 
+-    val composeRepoUserName: String
+-        get() = System.getenv("COMPOSE_REPO_USERNAME") ?: ""
+-
+-    val composeRepoKey: String
+-        get() = System.getenv("COMPOSE_REPO_KEY") ?: ""
++    val publishKey: String?
++        get() = System.getProperty("publishKey")
++            ?: (myProject.findProperty("publishKey") as? String)
+ 
+     val signHost: String?
+         get() = System.getenv("JB_SIGN_HOST")
+diff --git a/skiko/gradle.properties b/skiko/gradle.properties
+index ba5d35bc..0d13fb9f 100644
+--- a/skiko/gradle.properties
++++ b/skiko/gradle.properties
+@@ -1,6 +1,7 @@
+ kotlin.code.style=official
+-deploy.version=0.0.0
+-
++deploy.version=0.7.97-KBA-002
++deploy.release=true
++#发布命令 ./gradlew :skiko:publish -Pdeploy.release=true
+ dependencies.skia.windows-x64=m116-47d3027-1
+ dependencies.skia.linux-x64=m116-47d3027-1
+ dependencies.skia.macos-x64=m116-47d3027-1
+@@ -14,19 +15,20 @@ dependencies.skia.iosSim-arm64=m116-47d3027-1
+ dependencies.skia.iosSim-x64=m116-47d3027-1
+ dependencies.skia.android-x64=m116-47d3027-1
+ dependencies.skia.android-arm64=m116-47d3027-1
+-
+ org.gradle.jvmargs=-Xmx3G -XX:MaxMetaspaceSize=512m
+-
+-kotlin.version=1.9.21
+-
+-skiko.awt.enabled=true
++kotlin.version=2.0.21-KBA-001
++skiko.awt.enabled=false
+ skiko.js.enabled=false
+ skiko.wasm.enabled=false
+ skiko.android.enabled=false
+-skiko.native.enabled=false
+ skiko.native.linux.enabled=false
+ skiko.native.mac.enabled=false
+-skiko.native.ios.enabled=false
+-skiko.native.ios.arm64.enabled=false
+-skiko.native.ios.simulatorArm64.enabled=false
+-skiko.native.ios.x64.enabled=false
++skiko.native.ios.enabled=true
++skiko.native.ios.arm64.enabled=true
++skiko.native.ios.simulatorArm64.enabled=true
++skiko.native.ios.x64.enabled=true
++'kotlin.mpp.applyDefaultHierarchyTemplate=false'
++# This line needs for maven publication with ObjC defFile. Should be removed after Kotlin 1.8.20
++kotlin.mpp.enableCInteropCommonization=true
++kotlin.mpp.applyDefaultHierarchyTemplate=false
++skiko.native.enabled=true
+diff --git a/skiko/import-generator/build.gradle.kts b/skiko/import-generator/build.gradle.kts
+index bd4c97df..7b51df84 100644
+--- a/skiko/import-generator/build.gradle.kts
++++ b/skiko/import-generator/build.gradle.kts
+@@ -1,10 +1,13 @@
+ val kspVersion: String by project
+ 
+ plugins {
+-    kotlin("multiplatform")
++    id("org.jetbrains.kotlin.multiplatform")
+ }
+ 
+ repositories {
++    maven {
++        url = uri("https://mirrors.tencent.com/nexus/repository/maven-public")
++    }
+     mavenCentral()
+ }
+ 
+diff --git a/skiko/settings.gradle.kts b/skiko/settings.gradle.kts
+index f25f78b3..f3201dae 100644
+--- a/skiko/settings.gradle.kts
++++ b/skiko/settings.gradle.kts
+@@ -1,11 +1,15 @@
+ pluginManagement {
+     repositories {
++        mavenLocal()
++
+         mavenCentral()
+         gradlePluginPortal()
+     }
+     buildscript {
+         repositories {
++            mavenLocal()
+             mavenCentral()
++
+             maven("https://maven.pkg.jetbrains.space/public/p/compose/internal")
+             maven("https://maven.pkg.jetbrains.space/public/p/space/maven")
+         }
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/BackendRenderTarget.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/BackendRenderTarget.kt
+index 8570bd96..3f73ac5f 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/BackendRenderTarget.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/BackendRenderTarget.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Bitmap.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Bitmap.kt
+index 4bc0f4a5..72ee8595 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Bitmap.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Bitmap.kt
+@@ -1,10 +1,15 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+ import kotlin.math.min
+-
++// region Tencent Code Modify
++/*
+ class Bitmap internal constructor(ptr: NativePointer) : Managed(ptr, _FinalizerHolder.PTR), IHasImageInfo {
++*/
++class Bitmap constructor(ptr: NativePointer) : Managed(ptr, _FinalizerHolder.PTR), IHasImageInfo {
++// endregion
+     companion object {
+         fun makeFromImage(image: Image): Bitmap {
+             val bitmap = Bitmap()
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/BlendMode.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/BlendMode.kt
+index 36e7221f..e37697d7 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/BlendMode.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/BlendMode.kt
+@@ -1,5 +1,11 @@
+ package org.jetbrains.skia
+ 
++// region Tencent Code
++import kotlin.experimental.ExperimentalObjCRefinement
++
++@OptIn(ExperimentalObjCRefinement::class)
++@HiddenFromObjC
++// endregion
+ enum class BlendMode {
+     /** Replaces destination with zero: fully transparent.  */
+     CLEAR,
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/BreakIterator.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/BreakIterator.kt
+index 446910db..bfab0ba4 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/BreakIterator.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/BreakIterator.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Canvas.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Canvas.kt
+index 47710071..fe6c84a0 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Canvas.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Canvas.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.ImageFilter.Companion.makeDropShadowOnly
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Codec.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Codec.kt
+index c1fc8515..6da83c53 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Codec.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Codec.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorFilter.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorFilter.kt
+index d6b09347..d9032a40 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorFilter.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorFilter.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorSpace.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorSpace.kt
+index 94017f7d..70836503 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorSpace.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorSpace.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorType.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorType.kt
+index aaba58e5..d772b946 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorType.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ColorType.kt
+@@ -1,9 +1,18 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
++// region Tencent Code
++import kotlin.experimental.ExperimentalObjCRefinement
++// endregion
++
+ /**
+  * Describes how pixel bits encode color. A pixel may be an alpha mask, a
+  * grayscale, RGB, or ARGB.
+  */
++// region Tencent Code
++@OptIn(ExperimentalObjCRefinement::class)
++@HiddenFromObjC
++// endregion
+ enum class ColorType {
+     /**
+      * Uninitialized
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Data.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Data.kt
+index 87f7e4aa..fee2cb94 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Data.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Data.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/DirectContext.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/DirectContext.kt
+index f3fab4a1..a6e9b7f4 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/DirectContext.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/DirectContext.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Drawable.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Drawable.kt
+index a08c9513..856be8b5 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Drawable.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Drawable.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Font.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Font.kt
+index 927adff9..c5e993b9 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Font.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Font.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontMgr.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontMgr.kt
+index 14322bcf..ece60cd5 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontMgr.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontMgr.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontStyleSet.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontStyleSet.kt
+index 7b1abdad..cac251ce 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontStyleSet.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/FontStyleSet.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Graphics.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Graphics.kt
+index a889e9de..a6a20ef3 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Graphics.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Graphics.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/IRect.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/IRect.kt
+index 25de062e..8cef0c9c 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/IRect.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/IRect.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import kotlin.jvm.JvmStatic
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ISize.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ISize.kt
+index ab2ae9ea..08d503c1 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ISize.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ISize.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import kotlin.jvm.JvmStatic
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Image.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Image.kt
+index 858c19da..41e434fc 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Image.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Image.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ImageFilter.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ImageFilter.kt
+index 79556437..34ca2291 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ImageFilter.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ImageFilter.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ManagedString.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ManagedString.kt
+index 5651c7da..bac4c4c5 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ManagedString.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ManagedString.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/MaskFilter.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/MaskFilter.kt
+index 0d7f66dd..b88a9df2 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/MaskFilter.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/MaskFilter.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Paint.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Paint.kt
+index fdbf6ac0..9ec1ed97 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Paint.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Paint.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PaintFilterCanvas.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PaintFilterCanvas.kt
+index 23b3bfbb..057324f5 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PaintFilterCanvas.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PaintFilterCanvas.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Path.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Path.kt
+index 35896e30..80b33dca 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Path.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Path.kt
+@@ -1,7 +1,11 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
++// region Tencent Code
++import kotlin.experimental.ExperimentalObjCName
++// endregion
+ import kotlin.math.min
+ 
+ /**
+@@ -1710,6 +1714,10 @@ class Path internal constructor(ptr: NativePointer) : Managed(ptr, _FinalizerHol
+      *
+      * @see [https://fiddle.skia.org/c/@Path_addPoly](https://fiddle.skia.org/c/@Path_addPoly)
+      */
++    // region Tencent Code
++    @OptIn(ExperimentalObjCName::class)
++    @ObjCName("addPolySkia")
++    // endregion
+     fun addPoly(pts: FloatArray, close: Boolean): Path {
+         require(pts.size % 2 == 0) { "Expected even amount of pts, got " + pts.size }
+         Stats.onNativeCall()
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathEffect.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathEffect.kt
+index 007b46bc..808948fa 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathEffect.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathEffect.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathMeasure.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathMeasure.kt
+index f1082540..152f6958 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathMeasure.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathMeasure.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathOp.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathOp.kt
+index 26c1bd84..572e87c6 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathOp.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathOp.kt
+@@ -1,8 +1,16 @@
+ package org.jetbrains.skia
++// region Tencent Code
++import kotlin.experimental.ExperimentalObjCRefinement
++// endregion
+ 
+ /**
+  * The logical operations that can be performed when combining two paths.
+  */
++
++// region Tencent Code
++@OptIn(ExperimentalObjCRefinement::class)
++@HiddenFromObjC
++// endregion
+ enum class PathOp {
+     /** subtract the op path from the first path  */
+     DIFFERENCE,
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathSegmentIterator.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathSegmentIterator.kt
+index ec7d9118..0db9d8fc 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathSegmentIterator.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathSegmentIterator.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.InteropPointer
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathUtils.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathUtils.kt
+index 614e8d12..95be60ff 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathUtils.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PathUtils.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Picture.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Picture.kt
+index 57206331..2bc12586 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Picture.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Picture.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PictureRecorder.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PictureRecorder.kt
+index 5f3c0f1b..4d72c186 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PictureRecorder.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PictureRecorder.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PixelRef.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PixelRef.kt
+index b44125c0..c652938d 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/PixelRef.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/PixelRef.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+@@ -6,7 +7,12 @@ import org.jetbrains.skia.impl.Stats
+ import org.jetbrains.skia.impl.reachabilityBarrier
+ import org.jetbrains.skia.impl.NativePointer
+ 
++// region Tencent Code Modify
++/*
+ class PixelRef internal constructor(ptr: NativePointer) : RefCnt(ptr) {
++*/
++class PixelRef constructor(ptr: NativePointer) : RefCnt(ptr) {
++// endregion
+     companion object {
+         init {
+             staticLoad()
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Pixmap.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Pixmap.kt
+index 28f4cb87..576ea8f6 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Pixmap.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Pixmap.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/RRect.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/RRect.kt
+index 496050ab..6c77bcd0 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/RRect.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/RRect.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.InteropPointer
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Rect.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Rect.kt
+index a16f78e2..40cd0e05 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Rect.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Rect.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.InteropPointer
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Region.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Region.kt
+index 6a87cd50..9a6a80a1 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Region.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Region.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeEffect.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeEffect.kt
+index 6af5ef66..7d7c73b7 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeEffect.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeEffect.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeShaderBuilder.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeShaderBuilder.kt
+index 373a73f5..e9ce2eab 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeShaderBuilder.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/RuntimeShaderBuilder.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+@@ -7,6 +8,9 @@ import org.jetbrains.skia.impl.NativePointer
+ import org.jetbrains.skia.impl.Stats
+ import org.jetbrains.skia.impl.interopScope
+ import org.jetbrains.skia.impl.reachabilityBarrier
++// region Tencent Code
++import kotlin.experimental.ExperimentalObjCRefinement
++// endregion
+ 
+ class RuntimeShaderBuilder internal constructor(ptr: NativePointer) : Managed(ptr, _FinalizerHolder.PTR) {
+     companion object {
+@@ -23,28 +27,40 @@ class RuntimeShaderBuilder internal constructor(ptr: NativePointer) : Managed(pt
+     private object _FinalizerHolder {
+         val PTR = RuntimeShaderBuilder_nGetFinalizer()
+     }
+-
++    // region Tencent Code
++    @OptIn(ExperimentalObjCRefinement::class)
++    @HiddenFromObjC
++    // endregion
+     fun uniform(name: String, value: Int) {
+         Stats.onNativeCall()
+         interopScope {
+             _nUniformInt(_ptr, toInterop(name), value)
+         }
+     }
+-
++    // region Tencent Code
++    @OptIn(ExperimentalObjCRefinement::class)
++    @HiddenFromObjC
++    // endregion
+     fun uniform(name: String, value1: Int, value2: Int) {
+         Stats.onNativeCall()
+         interopScope {
+             _nUniformInt2(_ptr, toInterop(name), value1, value2)
+         }
+     }
+-
++    // region Tencent Code
++    @OptIn(ExperimentalObjCRefinement::class)
++    @HiddenFromObjC
++    // endregion
+     fun uniform(name: String, value1: Int, value2: Int, value3: Int) {
+         Stats.onNativeCall()
+         interopScope {
+             _nUniformInt3(_ptr, toInterop(name), value1, value2, value3)
+         }
+     }
+-
++    // region Tencent Code
++    @OptIn(ExperimentalObjCRefinement::class)
++    @HiddenFromObjC
++    // endregion
+     fun uniform(name: String, value1: Int, value2: Int, value3: Int, value4: Int) {
+         Stats.onNativeCall()
+         interopScope {
+@@ -79,21 +95,30 @@ class RuntimeShaderBuilder internal constructor(ptr: NativePointer) : Managed(pt
+             _nUniformFloat4(_ptr, toInterop(name), value1, value2, value3, value4)
+         }
+     }
+-
++    // region Tencent Code
++    @OptIn(ExperimentalObjCRefinement::class)
++    @HiddenFromObjC
++    // endregion
+     fun uniform(name: String, value: Matrix22) {
+         Stats.onNativeCall()
+         interopScope {
+             _nUniformFloatMatrix22(_ptr, toInterop(name), toInterop(value.mat))
+         }
+     }
+-
++    // region Tencent Code
++    @OptIn(ExperimentalObjCRefinement::class)
++    @HiddenFromObjC
++    // endregion
+     fun uniform(name: String, value: Matrix33) {
+         Stats.onNativeCall()
+         interopScope {
+             _nUniformFloatMatrix33(_ptr, toInterop(name), toInterop(value.mat))
+         }
+     }
+-
++    // region Tencent Code
++    @OptIn(ExperimentalObjCRefinement::class)
++    @HiddenFromObjC
++    // endregion
+     fun uniform(name: String, value: Matrix44) {
+         Stats.onNativeCall()
+         interopScope {
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Shader.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Shader.kt
+index fdba86cb..5bddfa4e 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Shader.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Shader.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ShadowUtils.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ShadowUtils.kt
+index e01e862a..b46f7797 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/ShadowUtils.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/ShadowUtils.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/StdVectorDecoder.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/StdVectorDecoder.kt
+index aeafbd72..7e4ba1a7 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/StdVectorDecoder.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/StdVectorDecoder.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.NativePointer
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Surface.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Surface.kt
+index 44a0b6e6..e6d8e14b 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Surface.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Surface.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlob.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlob.kt
+index 7043adc0..7d5e9579 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlob.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlob.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlobBuilder.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlobBuilder.kt
+index 81d739df..f0a9c4ce 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlobBuilder.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextBlobBuilder.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextLine.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextLine.kt
+index 19a933fe..86393cd5 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextLine.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/TextLine.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Typeface.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Typeface.kt
+index af3fc46a..0b431379 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/Typeface.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/Typeface.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/U16String.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/U16String.kt
+index b0cc68fa..fb5e8a46 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/U16String.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/U16String.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/icu/Unicode.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/icu/Unicode.kt
+index 650b66b7..7d9956fe 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/icu/Unicode.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/icu/Unicode.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.icu
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/impl/Native.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/impl/Native.kt
+index d43013e2..a3aa1a51 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/impl/Native.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/impl/Native.kt
+@@ -19,7 +19,10 @@ expect abstract class Native(ptr: NativePointer) {
+ 
+ internal expect fun reachabilityBarrier(obj: Any?)
+ 
+-internal fun getPtr(n: Native?): NativePointer = n?._ptr ?: Native.NullPointer
++// region Tencent Code Modify
++/* internal fun getPtr(n: Native?): NativePointer = n?._ptr ?: Native.NullPointer */
++fun getPtr(n: Native?): NativePointer = n?._ptr ?: Native.NullPointer
++// endregion
+ 
+ internal expect class InteropScope() {
+     fun toInterop(string: String?): InteropPointer
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/FontCollection.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/FontCollection.kt
+index 7f212d89..f43ccdb4 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/FontCollection.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/FontCollection.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/LineMetrics.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/LineMetrics.kt
+index 99eb3d71..3b7db23a 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/LineMetrics.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/LineMetrics.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/Paragraph.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/Paragraph.kt
+index 70b80391..bcf79d44 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/Paragraph.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/Paragraph.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphBuilder.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphBuilder.kt
+index 0657eb50..91daa106 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphBuilder.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphBuilder.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphCache.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphCache.kt
+index 4ee43621..d293d2fe 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphCache.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphCache.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphStyle.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphStyle.kt
+index cfc57a65..0452c975 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphStyle.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/ParagraphStyle.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/StrutStyle.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/StrutStyle.kt
+index bd225718..25a6f46d 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/StrutStyle.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/StrutStyle.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextBox.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextBox.kt
+index 4cab960a..3c529b3a 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextBox.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextBox.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextStyle.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextStyle.kt
+index 7182d4b8..f5212f04 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextStyle.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TextStyle.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TypefaceFontProvider.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TypefaceFontProvider.kt
+index 5030e459..ed38b103 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TypefaceFontProvider.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/paragraph/TypefaceFontProvider.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.paragraph
+ 
+ import org.jetbrains.skia.ModuleImport
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/FontMgrRunIterator.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/FontMgrRunIterator.kt
+index 2309cd45..f79b7470 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/FontMgrRunIterator.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/FontMgrRunIterator.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.shaper
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/HbIcuScriptRunIterator.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/HbIcuScriptRunIterator.kt
+index f51b33b7..a0470db8 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/HbIcuScriptRunIterator.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/HbIcuScriptRunIterator.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.shaper
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/IcuBidiRunIterator.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/IcuBidiRunIterator.kt
+index 2acd10e3..05f5ea6b 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/IcuBidiRunIterator.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/IcuBidiRunIterator.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.shaper
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/ManagedRunIterator.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/ManagedRunIterator.kt
+index 8fd5df77..2741cfeb 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/ManagedRunIterator.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/ManagedRunIterator.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.shaper
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/Shaper.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/Shaper.kt
+index a15c1d99..8b23a4bd 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/Shaper.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/Shaper.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.shaper
+ 
+ import org.jetbrains.skia.*
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/TextBlobBuilderRunHandler.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/TextBlobBuilderRunHandler.kt
+index 4bf2885e..e44398b0 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/TextBlobBuilderRunHandler.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/shaper/TextBlobBuilderRunHandler.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.shaper
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Animation.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Animation.kt
+index d85fcfff..f140e44a 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Animation.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Animation.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.skottie
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/AnimationBuilder.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/AnimationBuilder.kt
+index ba702f24..4b55e418 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/AnimationBuilder.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/AnimationBuilder.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.skottie
+ 
+ import org.jetbrains.skia.Data
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Logger.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Logger.kt
+index 8459b5a8..e23e0444 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Logger.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/skottie/Logger.kt
+@@ -1,4 +1,4 @@
+-@file:Suppress("NESTED_EXTERNAL_DECLARATION")
++@file:Suppress("NESTED_EXTERNAL_DECLARATION","OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.skottie
+ 
+ import org.jetbrains.skia.ExternalSymbolName
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/sksg/InvalidationController.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/sksg/InvalidationController.kt
+index ec275207..0be5b75d 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/sksg/InvalidationController.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/sksg/InvalidationController.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.sksg
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGCanvas.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGCanvas.kt
+index d08744fa..25acf9a7 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGCanvas.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGCanvas.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.svg
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGDOM.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGDOM.kt
+index 63fe6c68..cccb9178 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGDOM.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGDOM.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.svg
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGNode.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGNode.kt
+index 93659d8d..42d5acca 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGNode.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGNode.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.svg
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGSVG.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGSVG.kt
+index 0d278f09..7320e21d 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGSVG.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skia/svg/SVGSVG.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skia.svg
+ 
+ import org.jetbrains.skia.impl.Library.Companion.staticLoad
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skiko/Events.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skiko/Events.kt
+index 0de1cb9b..a2485a19 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skiko/Events.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skiko/Events.kt
+@@ -1,3 +1,4 @@
++@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+ package org.jetbrains.skiko
+ 
+ import kotlin.jvm.JvmInline
+diff --git a/skiko/src/commonMain/kotlin/org/jetbrains/skiko/OsArch.kt b/skiko/src/commonMain/kotlin/org/jetbrains/skiko/OsArch.kt
+index 128b69ee..37d51237 100644
+--- a/skiko/src/commonMain/kotlin/org/jetbrains/skiko/OsArch.kt
++++ b/skiko/src/commonMain/kotlin/org/jetbrains/skiko/OsArch.kt
+@@ -6,6 +6,9 @@ enum class OS(val id: String) {
+     Windows("windows"),
+     MacOS("macos"),
+     Ios("ios"),
++    // region Tencent Code Modify
++    Ohos("Ohos"),
++    // endregion
+ 
+     @Deprecated("JS is invalid host OS name. Consider using enum KotlinBackend to detect JS.")
+     JS("js"),
+diff --git a/skiko/src/darwinMain/kotlin/org/jetbrains/skiko/Dispatchers.kt b/skiko/src/darwinMain/kotlin/org/jetbrains/skiko/Dispatchers.kt
+index fab12dbb..7b5bdf71 100644
+--- a/skiko/src/darwinMain/kotlin/org/jetbrains/skiko/Dispatchers.kt
++++ b/skiko/src/darwinMain/kotlin/org/jetbrains/skiko/Dispatchers.kt
+@@ -20,7 +20,7 @@ object SkikoDispatchers {
+     val Main: CoroutineDispatcher = NsQueueDispatcher(dispatch_get_main_queue())
+     val IO: CoroutineDispatcher = NsQueueDispatcher(
+         dispatch_get_global_queue(
+-            QOS_CLASS_BACKGROUND.toLong(), 0)
++            QOS_CLASS_BACKGROUND.toLong(), 0.toULong())
+     )
+ }
+ 
+diff --git a/skiko/src/iosMain/kotlin/org/jetbrains/skiko/SkikoUIView.kt b/skiko/src/iosMain/kotlin/org/jetbrains/skiko/SkikoUIView.kt
+index 77290e74..49021a2f 100644
+--- a/skiko/src/iosMain/kotlin/org/jetbrains/skiko/SkikoUIView.kt
++++ b/skiko/src/iosMain/kotlin/org/jetbrains/skiko/SkikoUIView.kt
+@@ -477,12 +477,6 @@ class SkikoUIView : UIView, UIKeyInputProtocol, UITextInputProtocol {
+         return UITextInputStringTokenizer()
+     }
+ 
+-    override fun positionWithinRange(range: UITextRange, atCharacterOffset: NSInteger): UITextPosition? =
+-        TODO("positionWithinRange range: $range, atCharacterOffset: $atCharacterOffset")
+-
+-    override fun positionWithinRange(range: UITextRange, farthestInDirection: UITextLayoutDirection): UITextPosition? =
+-        TODO("positionWithinRange, farthestInDirection: ${farthestInDirection.directionToStr()}")
+-
+     override fun characterRangeByExtendingPosition(
+         position: UITextPosition,
+         inDirection: UITextLayoutDirection
+@@ -590,6 +584,13 @@ class SkikoUIView : UIView, UIKeyInputProtocol, UITextInputProtocol {
+     fun selectionDidChange() {
+         _inputDelegate?.selectionDidChange(this)
+     }
++
++    override fun positionWithinRange(
++        range: UITextRange,
++        farthestInDirection: UITextLayoutDirection
++    ): UITextPosition? {
++        TODO("Not yet implemented")
++    }
+ }
+ 
+ private class IntermediateTextPosition(val position: Long = 0) : UITextPosition()
+diff --git a/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Managed.native.kt b/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Managed.native.kt
+index d6d75507..661a7605 100644
+--- a/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Managed.native.kt
++++ b/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Managed.native.kt
+@@ -25,7 +25,8 @@ actual abstract class Managed actual constructor(
+         ptr: NativePointer, finalizer: NativePointer, managed: Boolean) : Native(ptr) {
+ 
+     private val thunk: FinalizationThunk? = if (managed) {
+-        require(ptr != NullPointer) { "Managed ptr is nullptr" }
++        // TODO: NativeDrawing会返回大量空指针，后面补充完毕后再放开
++//        require(ptr != NullPointer) { "Managed ptr is nullptr" }
+         require(finalizer != NullPointer) { "Managed finalizer is nullptr" }
+         val className = this::class.simpleName ?: "<kotlin>"
+         Stats.onAllocated(className)
+diff --git a/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Native.native.kt b/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Native.native.kt
+index ffd54ae1..4020e7b6 100644
+--- a/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Native.native.kt
++++ b/skiko/src/nativeMain/kotlin/org/jetbrains/skia/impl/Native.native.kt
+@@ -42,8 +42,16 @@ actual abstract class Native actual constructor(ptr: NativePointer) {
+     }
+ 
+     init {
++        // region Tencent Code Modify
++        /*
+         if (ptr == NativePtr.NULL) throw RuntimeException("Can't wrap nullptr")
+         _ptr = ptr
++         */
++
++        // TODO Native nullptr check
++//        if (ptr == NativePtr.NULL) throw RuntimeException("Can't wrap nullptr")
++        _ptr = ptr
++        // endregion
+     }
+ }
+ 
+diff --git a/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/OsArch.native.kt b/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/OsArch.native.kt
+index d59d946b..ef429a3d 100644
+--- a/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/OsArch.native.kt
++++ b/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/OsArch.native.kt
+@@ -9,6 +9,9 @@ actual val hostOs: OS by lazy {
+         OsFamily.LINUX -> OS.Linux
+         OsFamily.WINDOWS -> OS.Windows
+         OsFamily.IOS -> OS.Ios
++        // region Tencent Code Modify
++        OsFamily.OHOS -> OS.Ohos
++        // endregion
+         else -> throw Error("Unsupported OS ${Platform.osFamily}")
+     }
+ }
+diff --git a/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/Resources.native.kt b/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/Resources.native.kt
+index 32dcc4b9..3be65bbb 100644
+--- a/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/Resources.native.kt
++++ b/skiko/src/nativeMain/kotlin/org/jetbrains/skiko/Resources.native.kt
+@@ -35,7 +35,7 @@ actual suspend fun loadBytesFromPath(path: String): ByteArray {
+ 
+     val bytes = ByteArray(size.toInt())
+     val result = bytes.usePinned {
+-        fread(it.addressOf(0), 1, size.toULong(), file)
++        fread(it.addressOf(0), 1.toULong(), size.toULong(), file)
+     }
+     fclose(file)
+ 
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Cursor.ohosArm64.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Cursor.ohosArm64.kt
+new file mode 100644
+index 00000000..d77c3533
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Cursor.ohosArm64.kt
+@@ -0,0 +1,29 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++
++package org.jetbrains.skiko
++
++/**
++ * Pointer device cursor abstraction.
++ */
++// TODO: 鸿蒙适配
++actual typealias Cursor = Any
++
++internal actual fun getCursorById(id: PredefinedCursorsId): Cursor {
++    TODO("Not yet implemented")
++}
+\ No newline at end of file
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Events.ohosArm64.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Events.ohosArm64.kt
+new file mode 100644
+index 00000000..d7259fba
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Events.ohosArm64.kt
+@@ -0,0 +1,27 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.skiko
++
++// TODO: 鸿蒙适配
++actual typealias SkikoGesturePlatformEvent = Any
++
++actual typealias SkikoPlatformInputEvent = Any
++
++actual typealias SkikoPlatformKeyboardEvent = Any
++
++actual typealias SkikoPlatformPointerEvent = Any
+\ No newline at end of file
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Platform.ohosArm64.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Platform.ohosArm64.kt
+new file mode 100644
+index 00000000..d74ccc62
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/Platform.ohosArm64.kt
+@@ -0,0 +1,44 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.skiko
++
++internal actual fun URIHandler_openUri(uri: String) {
++    PlatformProxy.uriProxy?.openUri(uri)
++}
++
++internal actual fun ClipboardManager_setText(text: String) {
++    PlatformProxy.clipboardProxy?.setText(text)
++}
++
++internal actual fun ClipboardManager_getText(): String? = PlatformProxy.clipboardProxy?.getText()
++
++internal actual fun ClipboardManager_hasText(): Boolean =
++    PlatformProxy.clipboardProxy?.hasText() ?: false
++
++/**
++ * Sets cursor for the platform component.
++ */
++internal actual fun CursorManager_setCursor(component: Any, cursor: Cursor) {
++    PlatformProxy.cursorProxy?.setCursor(component, cursor)
++}
++
++/**
++ * Gets current cursor for the platform component, or null if not defined or known.
++ */
++internal actual fun CursorManager_getCursor(component: Any): Cursor? =
++    PlatformProxy.cursorProxy?.getCursor(component)
+\ No newline at end of file
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/PlatformProxy.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/PlatformProxy.kt
+new file mode 100644
+index 00000000..751e96e8
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/PlatformProxy.kt
+@@ -0,0 +1,39 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.skiko
++
++interface IURIProxy {
++    fun openUri(uri: String)
++}
++
++interface IClipboardProxy {
++    fun setText(text: String)
++    fun getText(): String?
++    fun hasText(): Boolean
++}
++
++interface ICursorProxy {
++    fun setCursor(component: Any?, cursor: Cursor)
++    fun getCursor(component: Any?): Cursor?
++}
++
++object PlatformProxy {
++    var uriProxy: IURIProxy? = null
++    var clipboardProxy: IClipboardProxy? = null
++    var cursorProxy: ICursorProxy? = null
++}
+\ No newline at end of file
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkiaLayer.ohosArm64.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkiaLayer.ohosArm64.kt
+new file mode 100644
+index 00000000..343e6d57
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkiaLayer.ohosArm64.kt
+@@ -0,0 +1,98 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.skiko
++
++import org.jetbrains.skia.Canvas
++import org.jetbrains.skia.PixelGeometry
++
++/**
++ * Generic layer for Skiko rendering.
++ */
++actual open class SkiaLayer {
++    /**
++     * Current graphics API used for rendering.
++     */
++    actual var renderApi: GraphicsApi
++        get() = TODO("Not yet implemented")
++        set(value) {}
++
++    /**
++     * Current content scale.
++     */
++    actual val contentScale: Float
++        get() = TODO("Not yet implemented")
++
++    /**
++     * Pixel geometry corresponding to graphics device which renders this layer
++     */
++    actual val pixelGeometry: PixelGeometry
++        get() = TODO("Not yet implemented")
++
++    /**
++     * If rendering is full screen.
++     */
++    actual var fullscreen: Boolean
++        get() = TODO("Not yet implemented")
++        set(value) {}
++
++    /**
++     * If transparency is enabled.
++     */
++    actual var transparency: Boolean
++        get() = TODO("Not yet implemented")
++        set(value) {}
++
++    /**
++     * Underlying platform component.
++     */
++    actual val component: Any?
++        get() = TODO("Not yet implemented")
++
++    /**
++     * Current view used for rendering.
++     */
++    actual var skikoView: SkikoView?
++        get() = TODO("Not yet implemented")
++        set(value) {}
++
++    /**
++     * Attach this SkikoView to platform container.
++     * Actual type of attach container is platform-specific.
++     */
++    actual fun attachTo(container: Any) {
++    }
++
++    /**
++     * Detach this SkikoView from platform container.
++     */
++    actual fun detach() {
++    }
++
++    /**
++     * Force redraw.
++     */
++    actual fun needRedraw() {
++    }
++
++    /**
++     * Drawing function.
++     */
++    internal actual fun draw(canvas: Canvas) {
++    }
++
++}
+\ No newline at end of file
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkikoInput.ohosArm64.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkikoInput.ohosArm64.kt
+new file mode 100644
+index 00000000..27cfc17d
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkikoInput.ohosArm64.kt
+@@ -0,0 +1,22 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.skiko
++
++actual interface SkikoInput {
++    actual object Empty : SkikoInput
++}
+\ No newline at end of file
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkikoKey.ohosArm64.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkikoKey.ohosArm64.kt
+new file mode 100644
+index 00000000..50629baa
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SkikoKey.ohosArm64.kt
+@@ -0,0 +1,130 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.skiko
++
++actual enum class SkikoKey {
++    KEY_UNKNOWN,
++    KEY_A,
++    KEY_S,
++    KEY_D,
++    KEY_F,
++    KEY_H,
++    KEY_G,
++    KEY_Z,
++    KEY_X,
++    KEY_C,
++    KEY_V,
++    KEY_B,
++    KEY_Q,
++    KEY_W,
++    KEY_E,
++    KEY_R,
++    KEY_Y,
++    KEY_T,
++    KEY_U,
++    KEY_I,
++    KEY_P,
++    KEY_L,
++    KEY_J,
++    KEY_K,
++    KEY_N,
++    KEY_M,
++    KEY_O,
++    KEY_1,
++    KEY_2,
++    KEY_3,
++    KEY_4,
++    KEY_5,
++    KEY_6,
++    KEY_7,
++    KEY_8,
++    KEY_9,
++    KEY_0,
++    KEY_CLOSE_BRACKET,
++    KEY_OPEN_BRACKET,
++    KEY_QUOTE,
++    KEY_SEMICOLON,
++    KEY_SLASH,
++    KEY_COMMA,
++    KEY_BACKSLASH,
++    KEY_PERIOD,
++    KEY_BACK_QUOTE,
++    KEY_EQUALS,
++    KEY_MINUS,
++    KEY_ENTER,
++    KEY_ESCAPE,
++    KEY_TAB,
++    KEY_BACKSPACE,
++    KEY_SPACE,
++    KEY_CAPSLOCK,
++    KEY_LEFT_META,
++    KEY_LEFT_SHIFT,
++    KEY_LEFT_ALT,
++    KEY_LEFT_CONTROL,
++    KEY_RIGHT_META,
++    KEY_RIGHT_SHIFT,
++    KEY_RIGHT_ALT,
++    KEY_RIGHT_CONTROL,
++    KEY_MENU,
++    KEY_UP,
++    KEY_DOWN,
++    KEY_LEFT,
++    KEY_RIGHT,
++    KEY_F1,
++    KEY_F2,
++    KEY_F3,
++    KEY_F4,
++    KEY_F5,
++    KEY_F6,
++    KEY_F7,
++    KEY_F8,
++    KEY_F9,
++    KEY_F10,
++    KEY_F11,
++    KEY_F12,
++    KEY_PRINTSCEEN,
++    KEY_SCROLL_LOCK,
++    KEY_PAUSE,
++    KEY_INSERT,
++    KEY_HOME,
++    KEY_PGUP,
++    KEY_DELETE,
++    KEY_END,
++    KEY_PGDOWN,
++    KEY_NUM_LOCK,
++    KEY_NUMPAD_0,
++    KEY_NUMPAD_1,
++    KEY_NUMPAD_2,
++    KEY_NUMPAD_3,
++    KEY_NUMPAD_4,
++    KEY_NUMPAD_5,
++    KEY_NUMPAD_6,
++    KEY_NUMPAD_7,
++    KEY_NUMPAD_8,
++    KEY_NUMPAD_9,
++    KEY_NUMPAD_ENTER,
++    KEY_NUMPAD_ADD,
++    KEY_NUMPAD_SUBTRACT,
++    KEY_NUMPAD_MULTIPLY,
++    KEY_NUMPAD_DIVIDE,
++    KEY_NUMPAD_DECIMAL;
++
++    actual val platformKeyCode: Int
++        get() = TODO("Not yet implemented")
++
++}
+\ No newline at end of file
+diff --git a/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SystemTheme.ohosArm64.kt b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SystemTheme.ohosArm64.kt
+new file mode 100644
+index 00000000..7e6a066f
+--- /dev/null
++++ b/skiko/src/ohosArm64Main/kotlin/org/jetbrains/skiko/SystemTheme.ohosArm64.kt
+@@ -0,0 +1,21 @@
++/*
++ * Tencent is pleased to support the open source community by making ovCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.skiko
++
++actual val currentSystemTheme: SystemTheme
++    get() = TODO("Not yet implemented")
+\ No newline at end of file
