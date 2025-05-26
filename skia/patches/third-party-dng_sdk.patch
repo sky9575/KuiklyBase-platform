@@ -1,0 +1,28 @@
+From e2b1c0a3fb3ab9e5b7d57992b2892e65b574d57f Mon Sep 17 00:00:00 2001
+From: skymhzhang <skymhzhang@tencent.com>
+Date: Sat, 24 May 2025 18:24:55 +0800
+Subject: [PATCH] =?UTF-8?q?=E9=80=82=E9=85=8D=E9=B8=BF=E8=92=99?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ source/dng_safe_arithmetic.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/source/dng_safe_arithmetic.h b/source/dng_safe_arithmetic.h
+index b229dc4..45ed602 100644
+--- a/source/dng_safe_arithmetic.h
++++ b/source/dng_safe_arithmetic.h
+@@ -115,7 +115,7 @@ inline std::int64_t SafeInt64MultByClang(std::int64_t arg1, std::int64_t arg2) {
+ #if (__WORDSIZE == 64) && !defined(__APPLE__)
+   if (__builtin_smull_overflow(arg1, arg2, &result)) {
+ #else
+-  if (__builtin_smulll_overflow(arg1, arg2, &result)) {
++  if (__builtin_smull_overflow(arg1, arg2, &result)) {
+ #endif
+     ThrowProgramError("Arithmetic overflow");
+     abort();  // Never reached.
+-- 
+2.39.5 (Apple Git-154)
+

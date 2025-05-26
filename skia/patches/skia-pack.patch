@@ -1,0 +1,464 @@
+From ad65e0ae1c86ac119f09b31d5d29ef286d7c6253 Mon Sep 17 00:00:00 2001
+From: skymhzhang <skymhzhang@tencent.com>
+Date: Fri, 23 May 2025 21:19:38 +0800
+Subject: [PATCH] =?UTF-8?q?skia-pick=E9=80=82=E9=85=8D=E9=B8=BF=E8=92=99?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ README.md                    |  12 ++--
+ script/archive.py            |   5 +-
+ script/build.py              |  79 +++++++++++++++++------
+ script/checkout.py           | 118 +++++++++++++++++++++++++----------
+ script/common.py             |   5 +-
+ script/prepare_linux.sh      |   5 +-
+ script/prepare_linux_arm.sh  |   7 ++-
+ script/prepare_linux_wasm.sh |   5 +-
+ 8 files changed, 171 insertions(+), 65 deletions(-)
+ mode change 100755 => 100644 script/archive.py
+ mode change 100755 => 100644 script/build.py
+ mode change 100755 => 100644 script/checkout.py
+ mode change 100755 => 100644 script/prepare_linux.sh
+ mode change 100755 => 100644 script/prepare_linux_arm.sh
+ mode change 100755 => 100644 script/prepare_linux_wasm.sh
+
+diff --git a/README.md b/README.md
+index a16c7d8..ce15e42 100644
+--- a/README.md
++++ b/README.md
+@@ -16,19 +16,15 @@ Prebuilt binaries can be found [in releases](https://github.com/JetBrains/skia-p
+ ## Building locally
+ 
+ ```sh
+-python3 script/checkout.py --version m126-6fd3120c1b
++python3 script/checkout.py --version m116-47d3027-1
+ python3 script/build.py
+-python3 script/archive.py --version m126-6fd3120c1b
++python3 script/archive.py --version m116-47d3027-1
+ ```
+ 
+ To build a debug build:
+ 
+ ```sh
+-python3 script/checkout.py --version m126-6fd3120c1b
++python3 script/checkout.py --version m116-47d3027-1
+ python3 script/build.py --build-type Debug
+-python3 script/archive.py --version m126-6fd3120c1b --build-type Debug
++python3 script/archive.py --version m116-47d3027-1 --build-type Debug
+ ```
+-
+-### Windows-specific
+-
+-On Windows, skia-pack requires Clang-cl to be installed. Clang-cl is a part of LLVM and can be downloaded from the [LLVM project's website](https://releases.llvm.org/). Please also make sure that Clang-cl.exe is available on %PATH%.
+diff --git a/script/archive.py b/script/archive.py
+old mode 100755
+new mode 100644
+index fb8037b..74e8936
+--- a/script/archive.py
++++ b/script/archive.py
+@@ -46,7 +46,10 @@ def main():
+     'modules/skunicode/src/*.h',
+     'src/base/*.h',
+     'src/core/*.h',
+-    'src/gpu/ganesh/gl/*.h',
++    # region Tencent Code
++    # 'src/gpu/ganesh/gl/*.h',
++    'src/gpu/gl/*.h',
++    # endregion
+     'src/utils/*.h',
+     'third_party/externals/angle2/LICENSE',
+     'third_party/externals/angle2/include/**/*',
+diff --git a/script/build.py b/script/build.py
+old mode 100755
+new mode 100644
+index 94f14a6..5c5e3ad
+--- a/script/build.py
++++ b/script/build.py
+@@ -1,6 +1,6 @@
+ #! /usr/bin/env python3
+ 
+-import common, os, shutil, subprocess, sys
++import common, os, subprocess, sys
+ 
+ def main():
+   os.chdir(os.path.join(os.path.dirname(__file__), os.pardir, 'skia'))
+@@ -18,7 +18,9 @@ def main():
+   isTvos = 'tvos' == target or 'tvosSim' == target
+   isIosSim = 'iosSim' == target
+   isTvosSim = 'tvosSim' == target
+-  isMacos = 'macos' == target
++  # region Tencent Code
++  # isMacos = 'macos' == target
++  # endregion
+ 
+   if build_type == 'Debug':
+     args = ['is_debug=true']
+@@ -27,11 +29,17 @@ def main():
+ 
+   args += [
+     'target_cpu="' + machine + '"',
++    # region Tencent Code
++    'skia_use_dng_sdk=false',
++    # endregion
+     'skia_use_system_expat=false',
+     'skia_use_system_libjpeg_turbo=false',
+     'skia_use_system_libpng=false',
+     'skia_use_system_libwebp=false',
+-    'skia_use_system_zlib=false',
++    # region Tencent Code
++    # 'skia_use_system_zlib=false',
++    'skia_use_system_zlib=true',
++    # endregion
+     'skia_use_sfntly=false',
+     'skia_use_system_freetype2=false',
+     'skia_use_system_harfbuzz=false',
+@@ -40,16 +48,21 @@ def main():
+     'skia_enable_skottie=true'
+   ]
+ 
+-  if isMacos or isIos or isTvos:
+-    if isMacos:
+-        args += ['skia_use_fonthost_mac=true']
++  # region Tencent Code
++  #if isMacos or isIos or isTvos:
++  #    if isMacos:
++  #        args += ['skia_use_fonthost_mac=true']
++  if 'macos' == target or isIos or isTvos:
++  # endregion
+     args += ['extra_cflags_cc=["-frtti"]']
+     args += ['skia_use_metal=true']
+     if isIos:
+       args += ['target_os="ios"']
+       if isIosSim:
+         args += ['ios_use_simulator=true']
+-        args += ['extra_cflags=["-mios-simulator-version-min=12.0"]']
++        # region Tencent Code
++        # args += ['extra_cflags=["-mios-simulator-version-min=12.0"]']
++        # endregion
+       else:
+         args += ['ios_min_target="12.0"']
+     else:
+@@ -70,11 +83,26 @@ def main():
+     if 'arm64' == machine:
+         # TODO: use clang on all targets!
+         args += [
++            # region Tencent Code
++            'skia_enable_fontmgr_ohos=true',
++            'skia_use_egl=true',
++            'skia_use_angle=true',
+             'skia_gl_standard="gles"',
++            'skia_use_libwebp_decode=true',
++            #'skia_use_libwebp_encode=true',
++            #'skia_use_no_webp_encode=false',
++            'skia_use_libjpeg_turbo_decode=true',
++            #'skia_use_libjpeg_turbo_encode=true',
++            # endregion
+             'extra_cflags_cc=["-fno-exceptions", "-fno-rtti", "-flax-vector-conversions=all", "-D_GLIBCXX_USE_CXX11_ABI=0"]',
+             'cc="clang"',
+             'cxx="clang++"',
++            # region Tencent Code
++            'is_component_build=true',
++            'is_ohos=true',
++            # endregion
+         ]
++        # args += ['extra_ldflags=["-lc++"]']
+     else:
+         args += [
+             'extra_cflags_cc=["-fno-exceptions", "-fno-rtti","-D_GLIBCXX_USE_CXX11_ABI=0"]',
+@@ -86,14 +114,16 @@ def main():
+       'skia_use_direct3d=true',
+       'extra_cflags=["-DSK_FONT_HOST_USE_SYSTEM_SETTINGS"]',
+     ]
+-    if 'windows' == host:
+-      clang_path = shutil.which('clang-cl.exe')
+-      if not clang_path:
+-        raise Exception("Please install LLVM from https://releases.llvm.org/, and make sure that clang-cl.exe is available in PATH")
+-      args += [
+-        'clang_win="' + os.path.dirname(os.path.dirname(clang_path)) + '"',
+-        'is_trivial_abi=false',
+-      ]
++    # region Tencent Code
++    #if 'windows' == host:
++    #    clang_path = shutil.which('clang-cl.exe')
++    #    if not clang_path:
++    #        raise Exception("Please install LLVM from https://releases.llvm.org/, and make sure that clang-cl.exe is available in PATH")
++    #    args += [
++    #        'clang_win="' + os.path.dirname(os.path.dirname(clang_path)) + '"',
++    #        'is_trivial_abi=false',
++    #        ]
++    # endregion
+   elif 'android' == target:
+     args += [
+       'ndk="'+ ndk + '"'
+@@ -116,6 +146,9 @@ def main():
+         'skia_use_wuffs=true',
+         'skia_use_lua=false',
+         'skia_use_webgl=true',
++        # region Tencent Code
++        'skia_enable_fontmgr_ohos=true',
++        # endregion
+         'skia_use_piex=false',
+         'skia_use_system_libpng=false',
+         'skia_use_system_freetype2=false',
+@@ -124,14 +157,20 @@ def main():
+         'skia_enable_tools=false',
+         'skia_enable_fontmgr_custom_directory=false',
+         'skia_enable_fontmgr_custom_embedded=true',
+-        'skia_enable_fontmgr_custom_empty=true',
++        # region Tencent Code
++        # 'skia_enable_fontmgr_custom_empty=true',
++        'skia_enable_fontmgr_custom_empty=false',
++        # endregion
+         'skia_use_webgl=true',
+         'skia_gl_standard="webgl"',
+         'skia_use_gl=true',
+         'skia_enable_gpu=true',
+         'skia_enable_svg=true', # other targets have this set in skia.gni
+         'skia_use_expat=true',   # other targets have this set in skia.gni
+-        'extra_cflags=["-DSK_SUPPORT_GPU=1", "-DSK_GL", "-DSK_DISABLE_LEGACY_SHADERCONTEXT", "-sSUPPORT_LONGJMP=wasm"]'
++        # region Tencent Code
++        # 'extra_cflags=["-DSK_SUPPORT_GPU=1", "-DSK_GL", "-DSK_DISABLE_LEGACY_SHADERCONTEXT", "-sSUPPORT_LONGJMP=wasm"]'
++        'extra_cflags=["-DSK_SUPPORT_GPU=1", "-DSK_GL", "-DSK_DISABLE_LEGACY_SHADERCONTEXT"]'
++        # endregion
+     ]
+ 
+   if 'linux' == host and 'arm64' == host_machine:
+@@ -142,7 +181,11 @@ def main():
+   gn = 'gn.exe' if 'windows' == host else 'gn'
+   print([os.path.join('bin', gn), 'gen', out, '--args=' + ' '.join(args)])
+   subprocess.check_call([os.path.join('bin', gn), 'gen', out, '--args=' + ' '.join(args)])
+-  subprocess.check_call([os.path.join('..', tools_dir, ninja), '-C', out, 'skia', 'modules'])
++  # region Tencent Code
++  #subprocess.check_call([os.path.join('..', tools_dir, ninja), '-C', out, 'skia', 'modules'])
++
++  subprocess.check_call([os.path.join('..', tools_dir, ninja), '-C', out, 'skia', 'modules', '-v', '-dkeeprsp'])
++  # endregion
+ 
+   return 0
+ 
+diff --git a/script/checkout.py b/script/checkout.py
+old mode 100755
+new mode 100644
+index 6566313..17a0e2a
+--- a/script/checkout.py
++++ b/script/checkout.py
+@@ -2,24 +2,75 @@
+ 
+ import common, os, re, subprocess, sys
+ 
+-def checkout_skia(commit):
++# region Tencent Code
++#def checkout_skia(commit):
+   # Clone Skia
+ 
+-  if os.path.exists("skia"):
+-    print("> Fetching {}".format(commit))
+-    os.chdir("skia")
+-    subprocess.check_call(["git", "reset", "--hard"])
+-    subprocess.check_call(["git", "clean", "-d", "-f"])
+-    subprocess.check_call(["git", "fetch", "origin"])
+-  else:
+-    print("> Cloning")
+-    subprocess.check_call(["git", "clone", "--config", "core.autocrlf=input", "https://github.com/JetBrains/skia.git", "--quiet"])
+-    os.chdir("skia")
+-    subprocess.check_call(["git", "fetch", "origin"])
++#  if os.path.exists("skia"):
++#    print("> Fetching {}".format(commit))
++#    os.chdir("skia")
++#    subprocess.check_call(["git", "reset", "--hard"])
++#    subprocess.check_call(["git", "clean", "-d", "-f"])
++#    subprocess.check_call(["git", "fetch", "origin"])
++#  else:
++#    print("> Cloning")
++#    subprocess.check_call(["git", "clone", "--config", "core.autocrlf=input", "https://github.com/JetBrains/skia.git", "--quiet"])
++#    os.chdir("skia")
++#    subprocess.check_call(["git", "fetch", "origin"])
++#
++#  # Checkout commit
++#  print("> Checking out", commit)
++#  subprocess.check_call(["git", "-c", "advice.detachedHead=false", "checkout", commit])
++#
++#def main():
++#  os.chdir(os.path.join(os.path.dirname(__file__), os.pardir))
++#
++#  parser = common.create_parser(True)
++#  args = parser.parse_args()
++#
++#  # Clone depot_tools
++#  if not os.path.exists("depot_tools"):
++#    subprocess.check_call(["git", "clone", "--config", "core.autocrlf=input", "https://chromium.googlesource.com/chromium/tools/depot_tools.git", "depot_tools"])
++#
++#  match = re.match('(m\\d+)(?:-([0-9a-f]+)(?:-([1-9][0-9]*))?)?', args.version)
++#  if not match:
++#    raise Exception('Expected --version "m<ver>-<sha>", got "' + args.version + '"')
++#
++#  commit = match.group(2)
++#  checkout_skia(commit)
++#
++#  # git deps
++#  print("> Running tools/git-sync-deps")
++#  if 'windows' == common.host():
++#    env = os.environ.copy()
++#    env['PYTHONHTTPSVERIFY']='0'
++#    subprocess.check_call(["python3", "tools/git-sync-deps"], env=env)
++#  else:
++#    subprocess.check_call(["python3", "tools/git-sync-deps"])
++#
++#  # fetch ninja
++#  print("> Fetching ninja")
++#  subprocess.check_call(["python3", "bin/fetch-ninja"])
++#
++#  # Patch an issue in Windows toolchain:
++#  # Enable delayed environment variable expansion for CMD to make GitHub Actions happy
++#  # https://issues.skia.org/issues/393402169
++#  with open("gn/toolchain/BUILD.gn", "r") as toolchain_file:
++#    toolchain_file_contents = toolchain_file.read()
++#
++#  toolchain_file_contents = toolchain_file_contents.replace(
++#    'shell = "cmd.exe /c',
++#    'shell = "cmd.exe /v:on /c',
++#  ).replace(
++#    r'env_setup = "$shell set \"PATH=%PATH%',
++#    r'env_setup = "$shell set \"PATH=!PATH!',
++#  )
++#
++#  with open("gn/toolchain/BUILD.gn", "w") as toolchain_file:
++#    toolchain_file.write(toolchain_file_contents)
++#
++#  return 0
+ 
+-  # Checkout commit
+-  print("> Checking out", commit)
+-  subprocess.check_call(["git", "-c", "advice.detachedHead=false", "checkout", commit])
+ 
+ def main():
+   os.chdir(os.path.join(os.path.dirname(__file__), os.pardir))
+@@ -31,12 +82,29 @@ def main():
+   if not os.path.exists("depot_tools"):
+     subprocess.check_call(["git", "clone", "--config", "core.autocrlf=input", "https://chromium.googlesource.com/chromium/tools/depot_tools.git", "depot_tools"])
+ 
++  # Clone Skia
+   match = re.match('(m\\d+)(?:-([0-9a-f]+)(?:-([1-9][0-9]*))?)?', args.version)
+   if not match:
+     raise Exception('Expected --version "m<ver>-<sha>", got "' + args.version + '"')
+ 
+   commit = match.group(2)
+-  checkout_skia(commit)
++  iteration = match.group(3)
++
++  if os.path.exists("skia"):
++    print("> Fetching")
++    os.chdir("skia")
++    subprocess.check_call(["git", "reset", "--hard"])
++    subprocess.check_call(["git", "clean", "-d", "-f"])
++    subprocess.check_call(["git", "fetch", "origin"])
++  else:
++    print("> Cloning")
++    subprocess.check_call(["git", "clone", "--config", "core.autocrlf=input", "https://github.com/JetBrains/skia.git", "--quiet"])
++    os.chdir("skia")
++    subprocess.check_call(["git", "fetch", "origin"])
++
++  # Checkout commit
++  print("> Checking out", commit)
++  subprocess.check_call(["git", "-c", "advice.detachedHead=false", "checkout", commit])
+ 
+   # git deps
+   print("> Running tools/git-sync-deps")
+@@ -51,24 +119,8 @@ def main():
+   print("> Fetching ninja")
+   subprocess.check_call(["python3", "bin/fetch-ninja"])
+ 
+-  # Patch an issue in Windows toolchain:
+-  # Enable delayed environment variable expansion for CMD to make GitHub Actions happy
+-  # https://issues.skia.org/issues/393402169
+-  with open("gn/toolchain/BUILD.gn", "r") as toolchain_file:
+-    toolchain_file_contents = toolchain_file.read()
+-
+-  toolchain_file_contents = toolchain_file_contents.replace(
+-    'shell = "cmd.exe /c',
+-    'shell = "cmd.exe /v:on /c',
+-  ).replace(
+-    r'env_setup = "$shell set \"PATH=%PATH%',
+-    r'env_setup = "$shell set \"PATH=!PATH!',
+-  )
+-
+-  with open("gn/toolchain/BUILD.gn", "w") as toolchain_file:
+-    toolchain_file.write(toolchain_file_contents)
+-
+   return 0
++# endregion
+ 
+ if __name__ == '__main__':
+   sys.exit(main())
+diff --git a/script/common.py b/script/common.py
+index c498a70..0512ca5 100644
+--- a/script/common.py
++++ b/script/common.py
+@@ -58,7 +58,10 @@ def github_headers():
+   if os.environ.get('GITHUB_BASIC'):
+     auth = 'Basic ' + base64.b64encode(os.environ.get('GITHUB_BASIC').encode('utf-8')).decode('utf-8')
+   else:
+-    auth = 'Bearer ' + os.environ.get('GITHUB_TOKEN')
++    # region Tencent Code
++    #auth = 'Bearer ' + os.environ.get('GITHUB_TOKEN')
++    auth = 'token ' + os.environ.get('GITHUB_TOKEN')
++    # endregion
+   return {
+     'Accept': 'application/vnd.github.v3+json',
+     'Authorization': auth
+diff --git a/script/prepare_linux.sh b/script/prepare_linux.sh
+old mode 100755
+new mode 100644
+index 06db3f6..bb3e175
+--- a/script/prepare_linux.sh
++++ b/script/prepare_linux.sh
+@@ -13,5 +13,8 @@ apt-get install gcc-9 g++-9 -y
+ update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+ update-alternatives --config gcc 
+ 
+-apt-get install git python3 wget -y
++# region Tencent Code
++# apt-get install git python3 wget -y
++apt-get install git python wget -y
++# endregion
+ apt-get install ninja-build fontconfig libfontconfig1-dev libglu1-mesa-dev curl zip -y
+\ No newline at end of file
+diff --git a/script/prepare_linux_arm.sh b/script/prepare_linux_arm.sh
+old mode 100755
+new mode 100644
+index d7f91c9..ed8ac29
+--- a/script/prepare_linux_arm.sh
++++ b/script/prepare_linux_arm.sh
+@@ -6,6 +6,9 @@ export DEBIAN_FRONTEND=noninteractive
+ apt-get update -y
+ apt-get install binutils build-essential -y
+ apt-get install software-properties-common -y
+-add-apt-repository ppa:git-core/ppa -y
+-apt-get install python3 git fontconfig libfontconfig1-dev libgl-dev curl wget -y
++# region Tencent Code
++# add-apt-repository ppa:git-core/ppa -y
++# apt-get install python3 git fontconfig libfontconfig1-dev libgl-dev curl wget -y
++apt-get install python git fontconfig libfontconfig1-dev libglu1-mesa-dev curl wget -y
++# endregion
+ apt-get install clang -y
+diff --git a/script/prepare_linux_wasm.sh b/script/prepare_linux_wasm.sh
+old mode 100755
+new mode 100644
+index df4ee4d..2f896cb
+--- a/script/prepare_linux_wasm.sh
++++ b/script/prepare_linux_wasm.sh
+@@ -6,4 +6,7 @@ export DEBIAN_FRONTEND=noninteractive
+ apt-get update -y
+ apt-get install binutils build-essential -y
+ apt-get install software-properties-common -y
+-apt-get install python3 git curl wget -y
+\ No newline at end of file
++# region Tencent Code
++# apt-get install python3 git curl wget -y
++apt-get install python git curl wget -y
++# endregion
+\ No newline at end of file
+-- 
+2.39.5 (Apple Git-154)
+
