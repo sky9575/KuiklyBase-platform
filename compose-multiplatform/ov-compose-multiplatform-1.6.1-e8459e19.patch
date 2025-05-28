@@ -1,0 +1,1393 @@
+Subject: [PATCH] Publish OV compose multiplatform
+---
+Index: gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposeCompilerCompatibility.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposeCompilerCompatibility.kt b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposeCompilerCompatibility.kt
+--- a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposeCompilerCompatibility.kt	(revision e8459e19b41f06ad80e76c25c46fbe5853c4e38e)
++++ b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposeCompilerCompatibility.kt	(revision 016a2d9d44ef661a8b3261d75df1cd5965f81a5b)
+@@ -28,8 +28,21 @@
+         "2.0.0-Beta4" to "1.5.9-kt-2.0.0-Beta4",
+     )
+ 
++    private val kotlinToCompilerAboutOhos = sortedMapOf(
++        "1.9.23-" to "1.5.10.1-dev-1"
++    )
++
++    private fun compilerVersionForAboutOhos(kotlinVersion: String): String? {
++        for ((key, value) in kotlinToCompilerAboutOhos.entries.reversed()) {
++            if (kotlinVersion.startsWith(key)) {
++                return value
++            }
++        }
++        return null
++    }
++
+     fun compilerVersionFor(kotlinVersion: String): String {
+-        return kotlinToCompiler[kotlinVersion] ?: throw RuntimeException(
++        return kotlinToCompiler[kotlinVersion] ?: compilerVersionForAboutOhos(kotlinVersion) ?: throw RuntimeException(
+             "Compose Multiplatform ${ComposeBuildConfig.composeGradlePluginVersion} doesn't support Kotlin " +
+                     "$kotlinVersion. " +
+                     "Please see $KOTLIN_COMPATIBILITY_LINK " +
+Index: gradle-plugins/gradle.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/gradle-plugins/gradle.properties b/gradle-plugins/gradle.properties
+--- a/gradle-plugins/gradle.properties	(revision e8459e19b41f06ad80e76c25c46fbe5853c4e38e)
++++ b/gradle-plugins/gradle.properties	(revision efe670089ee36ebfd730889f1eb85c977e2c9194)
+@@ -8,7 +8,7 @@
+ dev.junit.parallel=false
+ 
+ # Default version of Compose Libraries used by Gradle plugin
+-compose.version=1.6.0-dev1383
++compose.version=1.6.1-KBA-001
+ # The latest version of Compose Compiler used by Gradle plugin. Used only in tests/CI.
+ compose.tests.compiler.version=1.5.10.1
+ # The latest version of Kotlin compatible with compose.tests.compiler.version. Used only in tests/CI.
+@@ -28,4 +28,4 @@
+ 
+ # A version of Gradle plugin, that will be published,
+ # unless overridden by COMPOSE_GRADLE_PLUGIN_VERSION env var.
+-deploy.version=0.1.0-SNAPSHOT
++deploy.version=1.6.1-KBA-001
+\ No newline at end of file
+Index: gradle-plugins/build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle-plugins/build.gradle.kts b/gradle-plugins/build.gradle.kts
+--- a/gradle-plugins/build.gradle.kts	(revision 016a2d9d44ef661a8b3261d75df1cd5965f81a5b)
++++ b/gradle-plugins/build.gradle.kts	(revision efe670089ee36ebfd730889f1eb85c977e2c9194)
+@@ -54,6 +54,22 @@
+                     name = "LocalDir"
+                     url = rootProject.buildDir.resolve("repo").toURI()
+                 }
++
++                maven {
++                    name = "Remote"
++                    setUrl(findProperty("maven.remote.url").toString())
++                    credentials {
++                        username = findProperty("maven.remote.username")?.toString()
++                        password = findProperty("maven.remote.password")?.toString()
++
++                        if (username.isNullOrBlank() || password.isNullOrBlank()) {
++                            logger.warn("""
++                                |Maven credentials are not properly configured.
++                                |Get them here: ${findProperty("maven.remote.manager.url")}.
++                            """.trimMargin())
++                        }
++                    }
++                }
+             }
+         }
+     }
+Index: components/build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/build.gradle.kts b/components/build.gradle.kts
+--- a/components/build.gradle.kts	(revision 80c22af71ff05e428907d2e5bb50f6c407b9e217)
++++ b/components/build.gradle.kts	(revision 104e12a91351bda46f51d0fac2e567e9d5b98232)
+@@ -1,7 +1,13 @@
++import android.databinding.tool.ext.capitalizeUS
++
+ plugins {
+     kotlin("multiplatform") apply false
+     id("com.android.library") apply false
++    alias(libs.plugins.composeCompiler) apply false
+ }
++
++val platforms = findProperty("compose.platforms")?.toString() ?: ""
++val parsedPlatforms = ComposePlatforms.parse(platforms)
+ 
+ subprojects {
+     version = findProperty("deploy.version") ?: property("compose.version")!!
+@@ -24,14 +30,49 @@
+         configureIfExists<PublishingExtension> {
+             repositories {
+                 maven {
+-                    name = "ComposeRepo"
+-                    setUrl(System.getenv("COMPOSE_REPO_URL"))
++                    name = "Remote"
++                    setUrl(findProperty("maven.remote.url").toString())
+                     credentials {
+-                        username = System.getenv("COMPOSE_REPO_USERNAME")
+-                        password = System.getenv("COMPOSE_REPO_KEY")
+-                    }
+-                }
+-            }
+-        }
+-    }
+-}
+\ No newline at end of file
++                        username = findProperty("maven.remote.username")?.toString()
++                        password = findProperty("maven.remote.password")?.toString()
++
++                        if (username.isNullOrBlank() || password.isNullOrBlank()) {
++                            logger.warn("""
++                                |Maven credentials are not properly configured.
++                                |Get them here: ${findProperty("maven.remote.manager.url")}.
++                            """.trimMargin())
++                        }
++                    }
++                }
++            }
++
++            val configurePublishComposeJb = { repositoryName: String ->
++                tasks.register("publishComposeJbTo${repositoryName}") {
++                    group = "publishing"
++
++                    parsedPlatforms.forEach {
++                        val taskName = "publish${it.name}PublicationTo${repositoryName}"
++                        val task = tasks.findByName(taskName)
++                        if (task == null) {
++                            logger.warn("Cannot find task '$taskName' in project '${project.name}'")
++                        } else {
++                            dependsOn(task)
++                        }
++                    }
++                }
++            }
++
++            configurePublishComposeJb("MavenLocal")
++            repositories.all {
++                configurePublishComposeJb(name.capitalizeUS())
++            }
++        }
++    }
++
++    afterEvaluate {
++        // Call this to fix compose version for platforms not to be published.
++        ComposePlatforms.handleBootstrapComposeVersion(this, parsedPlatforms)
++    }
++}
++
++fun findPropertyOrEmpty(key: String): Any = findProperty(key) ?: ""
+\ No newline at end of file
+Index: components/gradle.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/components/gradle.properties b/components/gradle.properties
+--- a/components/gradle.properties	(revision 80c22af71ff05e428907d2e5bb50f6c407b9e217)
++++ b/components/gradle.properties	(revision 4c878560a3b9acff12cf09e2066d38e60923be8e)
+@@ -7,9 +7,11 @@
+ android.useAndroidX=true
+ 
+ #Versions
+-kotlin.version=1.9.22
+-compose.version=1.6.0-rc01
+-agp.version=8.1.2
++kotlin.version=2.0.21-KBA-001
++compose.version=1.6.1-KBA-001
++compose.bootstrap.version=1.6.1
++# Keep the version aligned with compose multiplatform core.
++agp.version=8.0.2
+ 
+ #Compose
+ org.jetbrains.compose.experimental.jscanvas.enabled=true
+@@ -17,6 +19,7 @@
+ org.jetbrains.compose.experimental.macos.enabled=true
+ compose.desktop.verbose=true
+ compose.useMavenLocal=false
++compose.demo=false
+ 
+ #Kotlin
+ kotlin.code.style=official
+@@ -24,3 +27,6 @@
+ kotlin.js.webpack.major.version=4
+ kotlin.native.useEmbeddableCompilerJar=true
+ xcodeproj=./resources/demo/iosApp
++
++deploy.version=1.6.1-KBA-001
++COMPOSE_REPO_URL=https://mirrors.tencent.com/nexus/repository/maven-public/
+Index: components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ImageResources.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ImageResources.kt b/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ImageResources.kt
+--- a/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ImageResources.kt	(revision 80c22af71ff05e428907d2e5bb50f6c407b9e217)
++++ b/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ImageResources.kt	(revision b17c871511d3de0b7b782ea445ef2ccbc7f7269d)
+@@ -11,6 +11,7 @@
+ import kotlinx.coroutines.*
+ import kotlinx.coroutines.sync.Mutex
+ import kotlinx.coroutines.sync.withLock
++import org.jetbrains.compose.resources.platform.PlatformImageManagerImpl
+ import org.jetbrains.compose.resources.vector.toImageVector
+ import org.jetbrains.compose.resources.vector.xmldom.Element
+ 
+@@ -73,10 +74,16 @@
+     val resourceReader = LocalResourceReader.current
+     val imageBitmap by rememberResourceState(resource, { emptyImageBitmap }) { env ->
+         val path = resource.getPathByEnvironment(env)
+-        val cached = loadImage(path, resourceReader) {
+-            ImageCache.Bitmap(it.toImageBitmap())
+-        } as ImageCache.Bitmap
+-        cached.bitmap
++        // region Tencent Code
++        if (PlatformImageManagerImpl.isUsePlatformImage) {
++            PlatformImageManagerImpl.loadImageBitmap(path)
++        } else {
++        // endregion
++            val cached = loadImage(path, resourceReader) {
++                ImageCache.Bitmap(it.toImageBitmap())
++            } as ImageCache.Bitmap
++            cached.bitmap
++        }
+     }
+     return imageBitmap
+ }
+@@ -118,7 +125,9 @@
+ private val imageCache = mutableMapOf<String, Deferred<ImageCache>>()
+ 
+ //@TestOnly
+-internal fun dropImageCache() {
++// TODO，为了在skia方案和Native方案之间切换，需要删除缓存，否则会出现crash，未来可以删除。
++@Deprecated("框架切换用的，业务不要使用")
++fun dropImageCache() {
+     imageCache.clear()
+ }
+ 
+Index: components/resources/library/build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/build.gradle.kts b/components/resources/library/build.gradle.kts
+--- a/components/resources/library/build.gradle.kts	(revision 9404007608a9956c564cd1dc980ac8d7c0e12de6)
++++ b/components/resources/library/build.gradle.kts	(revision 4c878560a3b9acff12cf09e2066d38e60923be8e)
+@@ -7,12 +7,13 @@
+     id("org.jetbrains.compose")
+     id("maven-publish")
+     id("com.android.library")
++    alias(libs.plugins.composeCompiler)
+ }
+ 
+ val composeVersion = extra["compose.version"] as String
+ 
+ kotlin {
+-    jvm("desktop")
++//    jvm("desktop")
+     androidTarget {
+         publishLibraryVariants("release")
+         compilations.all {
+@@ -24,27 +25,29 @@
+     iosX64()
+     iosArm64()
+     iosSimulatorArm64()
+-    js {
+-        browser {
+-            testTask(Action {
+-                enabled = false
+-            })
+-        }
+-    }
+-    @OptIn(ExperimentalWasmDsl::class)
+-    wasmJs {
+-        browser {
+-            testTask(Action {
+-                useKarma {
+-                    useChromeHeadless()
+-                    useConfigDirectory(project.projectDir.resolve("karma.config.d").resolve("wasm"))
+-                }
+-            })
+-        }
+-        binaries.executable()
+-    }
+-    macosX64()
+-    macosArm64()
++//    js {
++//        browser {
++//            testTask(Action {
++//                enabled = false
++//            })
++//        }
++//    }
++//    @OptIn(ExperimentalWasmDsl::class)
++//    wasmJs {
++//        browser {
++//            testTask(Action {
++//                useKarma {
++//                    useChromeHeadless()
++//                    useConfigDirectory(project.projectDir.resolve("karma.config.d").resolve("wasm"))
++//                }
++//            })
++//        }
++//        binaries.executable()
++//    }
++//    macosX64()
++//    macosArm64()
++
++    ohosArm64()
+ 
+     applyDefaultHierarchyTemplate()
+     sourceSets {
+@@ -99,17 +102,17 @@
+         val jvmAndAndroidTest by creating {
+             dependsOn(blockingTest)
+         }
+-        val desktopMain by getting {
+-            dependsOn(skikoMain)
+-            dependsOn(jvmAndAndroidMain)
+-        }
+-        val desktopTest by getting {
+-            dependsOn(skikoTest)
+-            dependsOn(jvmAndAndroidTest)
+-            dependencies {
+-                implementation(compose.desktop.currentOs)
+-            }
+-        }
++//        val desktopMain by getting {
++//            dependsOn(skikoMain)
++//            dependsOn(jvmAndAndroidMain)
++//        }
++//        val desktopTest by getting {
++//            dependsOn(skikoTest)
++//            dependsOn(jvmAndAndroidTest)
++//            dependencies {
++//                implementation(compose.desktop.currentOs)
++//            }
++//        }
+         val androidMain by getting {
+             dependsOn(jvmAndAndroidMain)
+         }
+@@ -133,24 +136,24 @@
+             dependsOn(skikoTest)
+             dependsOn(blockingTest)
+         }
+-        val webMain by creating {
+-            dependsOn(skikoMain)
+-        }
+-        val jsMain by getting {
+-            dependsOn(webMain)
+-        }
+-        val wasmJsMain by getting {
+-            dependsOn(webMain)
+-        }
+-        val webTest by creating {
+-            dependsOn(skikoTest)
+-        }
+-        val jsTest by getting {
+-            dependsOn(webTest)
+-        }
+-        val wasmJsTest by getting {
+-            dependsOn(webTest)
+-        }
++//        val webMain by creating {
++//            dependsOn(skikoMain)
++//        }
++//        val jsMain by getting {
++//            dependsOn(webMain)
++//        }
++//        val wasmJsMain by getting {
++//            dependsOn(webMain)
++//        }
++//        val webTest by creating {
++//            dependsOn(skikoTest)
++//        }
++//        val jsTest by getting {
++//            dependsOn(webTest)
++//        }
++//        val wasmJsTest by getting {
++//            dependsOn(webTest)
++//        }
+     }
+ }
+ 
+@@ -194,9 +197,9 @@
+ )
+ 
+ // adding it here to make sure skiko is unpacked and available in web tests
+-compose.experimental {
+-    web.application {}
+-}
++// compose.experimental {
++//     web.application {}
++// }
+ 
+ afterEvaluate {
+     // TODO(o.k.): remove this after we refactor jsAndWasmMain source set in skiko to get rid of broken "common" js-interop
+Index: gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposePlugin.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposePlugin.kt b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposePlugin.kt
+--- a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposePlugin.kt	(revision 0d5734584ffb2281cdcc8821031b90743c9b502b)
++++ b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/ComposePlugin.kt	(revision 4c878560a3b9acff12cf09e2066d38e60923be8e)
+@@ -62,7 +62,6 @@
+         project.initializePreview(desktopExtension)
+         composeExtension.extensions.create("web", WebExtension::class.java)
+ 
+-        project.plugins.apply(ComposeCompilerKotlinSupportPlugin::class.java)
+         project.configureNativeCompilerCaching()
+ 
+         project.configureComposeResources()
+@@ -76,15 +75,6 @@
+                 project.configureSyncTask(mppExt)
+             }
+ 
+-            project.tasks.withType(KotlinCompile::class.java).configureEach {
+-                it.kotlinOptions.apply {
+-                    freeCompilerArgs = freeCompilerArgs +
+-                            composeExtension.kotlinCompilerPluginArgs.get().flatMap { arg ->
+-                                listOf("-P", "plugin:androidx.compose.compiler.plugins.kotlin:$arg")
+-                            }
+-                }
+-            }
+-
+             disableSignatureClashCheck(project)
+         }
+     }
+Index: components/buildSrc/src/main/kotlin/ComposePlatforms.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/buildSrc/src/main/kotlin/ComposePlatforms.kt b/components/buildSrc/src/main/kotlin/ComposePlatforms.kt
+new file mode 100644
+--- /dev/null	(revision 6f60f084456e816c75fe30cb38fb511a561b1b3d)
++++ b/components/buildSrc/src/main/kotlin/ComposePlatforms.kt	(revision 6f60f084456e816c75fe30cb38fb511a561b1b3d)
+@@ -0,0 +1,155 @@
++/*
++ * Copyright 2020-2021 JetBrains s.r.o. and respective authors and developers.
++ * Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE.txt file.
++ */
++
++import org.gradle.api.Project
++import org.gradle.api.artifacts.Configuration
++import java.util.*
++import kotlin.collections.HashMap
++
++/**
++ * The name or alternative names can be used in gradle.properties of the modules (in arbitrary case).
++ * That means we need to be careful if/when renaming or deleting any enum value or its name.
++ */
++enum class ComposePlatforms(vararg val alternativeNames: String) {
++    KotlinMultiplatform("Common"),
++    Desktop("Jvm"),
++    AndroidRelease("Android"),
++    Js("Web"),
++    WasmJs("Web"),
++    MacosX64("Macos"),
++    MacosArm64("Macos"),
++    IosX64("UiKit"),
++    IosArm64("UiKit"),
++    IosSimulatorArm64("UiKit"),
++    TvosArm64("TvOs"),
++    TvosX64("TvOs"),
++    TvosSimulatorArm64("TvOs"),
++    WatchosArm64("WatchOs"),
++    WatchosArm32("WatchOs"),
++    WatchosX64("WatchOs"),
++    WatchosSimulatorArm64("WatchOs"),
++    LinuxX64("Linux"),
++    LinuxArm64("Linux"),
++    MingwX64("Mingw"),
++    OhosArm64("Ohos")
++    ;
++
++    private val namesLowerCased by lazy {
++        listOf(name, *alternativeNames).map { it.lowercase() }.toSet()
++    }
++
++    fun nameContainedByIgnoringCase(nameToMatch: String): Boolean {
++        val nameToMatchInLowerCase = nameToMatch.lowercase()
++        return namesLowerCased.any { nameToMatchInLowerCase.contains(it) }
++    }
++
++    fun matchesAnyIgnoringCase(namesToMatch: Collection<String>): Boolean {
++        val namesToMatchLowerCased = namesToMatch.map { it.lowercase() }.toSet()
++        return namesToMatchLowerCased.intersect(this.namesLowerCased).isNotEmpty()
++    }
++
++    fun matches(nameCandidate: String): Boolean =
++        listOf(name, *alternativeNames).any { it.equals(nameCandidate, ignoreCase = true) }
++
++    companion object {
++        val ALL = EnumSet.allOf(ComposePlatforms::class.java)
++
++        val JVM_BASED = EnumSet.of(
++            ComposePlatforms.Desktop,
++            ComposePlatforms.AndroidRelease
++        )
++
++        val IOS = EnumSet.of(
++            ComposePlatforms.IosX64,
++            ComposePlatforms.IosArm64,
++            ComposePlatforms.IosSimulatorArm64
++        )
++
++        val ANDROID = EnumSet.of(
++            ComposePlatforms.AndroidRelease
++        )
++
++        // These platforms are not supported by skiko yet
++        val NO_SKIKO = EnumSet.of(
++            ComposePlatforms.TvosArm64,
++            ComposePlatforms.TvosX64,
++            ComposePlatforms.TvosSimulatorArm64,
++            ComposePlatforms.WatchosArm64,
++            ComposePlatforms.WatchosArm32,
++            ComposePlatforms.WatchosX64,
++            ComposePlatforms.WatchosSimulatorArm64,
++            ComposePlatforms.LinuxX64,
++            ComposePlatforms.LinuxArm64,
++            ComposePlatforms.MingwX64,
++        )
++
++        /**
++         * Maps comma separated list of platforms into a set of [ComposePlatforms]
++         * The function is case- and whitespace-insensetive.
++         *
++         * Special value: all
++         */
++        fun parse(platformsNames: String): Set<ComposePlatforms> {
++            val platforms = EnumSet.noneOf(ComposePlatforms::class.java)
++            val unknownNames = arrayListOf<String>()
++
++            for (name in platformsNames.split(",").map { it.trim() }.filter { it.isNotBlank() }) {
++                if (name.equals("all", ignoreCase = true)) {
++                    return ALL
++                }
++
++                val matchingPlatforms = ALL.filter { it.matches(name) }
++                if (matchingPlatforms.isNotEmpty()) {
++                    platforms.addAll(matchingPlatforms)
++                } else {
++                    unknownNames.add(name)
++                }
++            }
++
++            if (unknownNames.isNotEmpty()) {
++                error("Unknown platforms: ${unknownNames.joinToString(", ")}")
++            }
++
++            return platforms
++        }
++
++        fun handleBootstrapComposeVersion(
++            project: Project,
++            publishingPlatforms: Set<ComposePlatforms>,
++            bootstrapVersion: String? = null
++        ) {
++            if (publishingPlatforms.isEmpty()) return
++            val selectedBootstrapVersion = bootstrapVersion
++                ?: project.findProperty("compose.bootstrap.version")?.toString()
++                ?: "1.6.1"
++
++            val enabledConfigurations = HashMap<Configuration, Boolean>()
++            for (configuration in project.configurations) {
++                for (platform in publishingPlatforms) {
++                    if (configuration.name.contains("common", true) ||
++                        platform.nameContainedByIgnoringCase(configuration.name)) {
++                        enabledConfigurations[configuration] = true
++                        for (superConfiguration in configuration.hierarchy) {
++                            enabledConfigurations[superConfiguration] = true
++                        }
++                    } else {
++                        enabledConfigurations.putIfAbsent(configuration, false)
++                    }
++                }
++            }
++            for (entry in enabledConfigurations.entries) {
++                if (!entry.value) {
++                    entry.key.resolutionStrategy {
++                        eachDependency {
++                            if (requested.group.startsWith("org.jetbrains.compose") && !requested.group.endsWith("compiler")) {
++                                useVersion(selectedBootstrapVersion)
++                            }
++                        }
++                    }
++                }
++            }
++        }
++    }
++}
+Index: components/settings.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/settings.gradle.kts b/components/settings.gradle.kts
+--- a/components/settings.gradle.kts	(revision 7242c6fa71bdc2fc82b2d309fd9378929fb975ea)
++++ b/components/settings.gradle.kts	(revision 4c878560a3b9acff12cf09e2066d38e60923be8e)
+@@ -4,6 +4,7 @@
+         gradlePluginPortal()
+         mavenCentral()
+         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
++        maven("https://mirrors.tencent.com/nexus/repository/maven-public/")
+         if (extra["compose.useMavenLocal"] == "true") {
+             mavenLocal()
+         }
+@@ -25,17 +26,22 @@
+         google()
+         mavenCentral()
+         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
++        maven("https://mirrors.tencent.com/nexus/repository/maven-public/")
+     }
+ }
+ 
+-include(":SplitPane:library")
+-include(":SplitPane:demo")
+-include(":AnimatedImage:library")
+-include(":AnimatedImage:demo")
+-include(":resources:library")
+-include(":resources:demo:androidApp")
+-include(":resources:demo:desktopApp")
+-include(":resources:demo:shared")
+-include(":ui-tooling-preview:library")
+-include(":ui-tooling-preview:demo:desktopApp")
+-include(":ui-tooling-preview:demo:shared")
++// include(":SplitPane:library")
++// include(":AnimatedImage:library")
++include(":resources:library")
++include(":ui-tooling-preview:library")
++
++// Disable demos when publishing.
++if (extra.properties["compose.demo"] != "false") {
++    include(":SplitPane:demo")
++    include(":AnimatedImage:demo")
++    include(":resources:demo:androidApp")
++    include(":resources:demo:desktopApp")
++    include(":resources:demo:shared")
++    include(":ui-tooling-preview:demo:desktopApp")
++    include(":ui-tooling-preview:demo:shared")
++}
+Index: gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/web/internal/configureExperimentalWebApplication.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/web/internal/configureExperimentalWebApplication.kt b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/web/internal/configureExperimentalWebApplication.kt
+--- a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/web/internal/configureExperimentalWebApplication.kt	(revision 7242c6fa71bdc2fc82b2d309fd9378929fb975ea)
++++ b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/web/internal/configureExperimentalWebApplication.kt	(revision 3955b60dfe4a42b35a289cbbd2ff4a11150b49a5)
+@@ -60,8 +60,8 @@
+     )
+     return project.provider {
+         val skikoDependency = configurationWithSkiko.allDependenciesDescriptors.firstOrNull(::isSkikoDependency)
+-        skikoDependency?.version
+-            ?: error("Cannot determine the version of Skiko for Compose '$composeVersion'")
++        skikoDependency?.version ?: "0.7.97"
++            // ?: error("Cannot determine the version of Skiko for Compose '$composeVersion'")
+     }
+ }
+ 
+Index: components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.kt b/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,34 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * region Tencent Code
++ */
++package org.jetbrains.compose.resources.platform
++
++import androidx.compose.ui.graphics.ImageBitmap
++
++internal interface PlatformImageManager {
++    val isUsePlatformImage: Boolean
++        get() = false
++
++    suspend fun loadImageBitmap(path: String): ImageBitmap {
++        throw UnsupportedOperationException()
++    }
++}
++
++internal expect object PlatformImageManagerImpl : PlatformImageManager
+\ No newline at end of file
+Index: components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/UikitImageManager.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/UikitImageManager.kt b/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/UikitImageManager.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/UikitImageManager.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,35 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * region Tencent Code
++ */
++package org.jetbrains.compose.resources
++
++import androidx.compose.ui.graphics.painter.Painter
++import org.jetbrains.compose.resources.platform.PlatformImageManagerImpl
++
++object UikitImageManager {
++
++    @OptIn(ExperimentalResourceApi::class)
++    suspend fun loadImagePainter(resource: DrawableResource): Painter =
++        PlatformImageManagerImpl.loadImagePainter(resource)
++
++    @InternalResourceApi
++    fun clearCache() = PlatformImageManagerImpl.clearCache()
++
++}
+\ No newline at end of file
+Index: components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ios.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ios.kt b/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ios.kt
+new file mode 100644
+--- /dev/null	(revision 8cfd22bb4f4daeea1f4cc712cdaf7978d77f5157)
++++ b/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ios.kt	(revision 8cfd22bb4f4daeea1f4cc712cdaf7978d77f5157)
+@@ -0,0 +1,126 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * region Tencent Code
++ */
++package org.jetbrains.compose.resources.platform
++
++import androidx.compose.ui.graphics.UikitImageBitmap
++import androidx.compose.runtime.CurrentPlatform
++import androidx.compose.runtime.PlatformType
++import androidx.compose.ui.graphics.ImageBitmap
++import androidx.compose.ui.graphics.painter.BitmapPainter
++import androidx.compose.ui.graphics.painter.Painter
++import androidx.compose.ui.platform.v2.nativefoundation.decodeUIImageFromPath
++import kotlinx.coroutines.CoroutineStart
++import kotlinx.coroutines.Deferred
++import kotlinx.coroutines.async
++import kotlinx.coroutines.coroutineScope
++import kotlinx.coroutines.sync.Mutex
++import kotlinx.coroutines.sync.withLock
++import org.jetbrains.compose.resources.DensityQualifier
++import org.jetbrains.compose.resources.DrawableResource
++import org.jetbrains.compose.resources.ExperimentalResourceApi
++import org.jetbrains.compose.resources.InternalResourceApi
++import org.jetbrains.compose.resources.LanguageQualifier
++import org.jetbrains.compose.resources.RegionQualifier
++import org.jetbrains.compose.resources.ResourceEnvironment
++import org.jetbrains.compose.resources.ThemeQualifier
++import org.jetbrains.compose.resources.getPathByEnvironment
++import org.jetbrains.compose.resources.readResourceBytes
++import org.jetbrains.compose.resources.toImageBitmap
++
++
++@OptIn(InternalResourceApi::class, ExperimentalResourceApi::class)
++internal actual object PlatformImageManagerImpl : PlatformImageManager {
++    private val emptyImageBitmap: ImageBitmap by lazy { ImageBitmap(1, 1) }
++    private val imageCacheMutex = Mutex()
++    private val imageCache = mutableMapOf<String, Deferred<UikitImageCache>>()
++
++    private val environment = ResourceEnvironment(
++        language = LanguageQualifier("en"),
++        region = RegionQualifier("US"),
++        theme = ThemeQualifier.LIGHT,
++        density = DensityQualifier.XHDPI
++    )
++
++    override val isUsePlatformImage: Boolean
++        get() = CurrentPlatform == PlatformType.IOS
++
++    /**
++     * 提供了异步加载Painter的能力，同时兼容SKIA渲染和CALayer渲染。
++     */
++    suspend fun loadImagePainter(
++        resource: DrawableResource,
++        drawInSkia: Boolean = false
++    ): Painter {
++        val path = resource.getPathByEnvironment(environment)
++        val imageBitmap = if (isUsePlatformImage && !drawInSkia) {
++            loadImageBitmap(path)
++        } else {
++            val cached = loadImage(path) {
++                UikitImageCache.Bitmap(it.toImageBitmap())
++            } as UikitImageCache.Bitmap
++            cached.bitmap
++        }
++        return BitmapPainter(imageBitmap)
++    }
++
++    override suspend fun loadImageBitmap(path: String): ImageBitmap {
++        val cached = loadNativeImage(path) {
++            UikitImageCache.Bitmap(
++                decodeUIImageFromPath(path)?.let(::UikitImageBitmap) ?: emptyImageBitmap
++            )
++        } as UikitImageCache.Bitmap
++        return cached.bitmap
++    }
++
++    private suspend fun loadNativeImage(
++        path: String,
++        decode: (String) -> UikitImageCache
++    ): UikitImageCache = coroutineScope {
++        val deferred = imageCacheMutex.withLock {
++            imageCache.getOrPut(path) {
++                // LAZY - to free the mutex lock as fast as possible
++                async(start = CoroutineStart.LAZY) {
++                    decode(path)
++                }
++            }
++        }
++        deferred.await()
++    }
++
++    private suspend fun loadImage(
++        path: String,
++        decode: (ByteArray) -> UikitImageCache
++    ): UikitImageCache = coroutineScope {
++        val deferred = imageCacheMutex.withLock {
++            imageCache.getOrPut(path) {
++                // LAZY - to free the mutex lock as fast as possible
++                async(start = CoroutineStart.LAZY) {
++                    decode(readResourceBytes(path))
++                }
++            }
++        }
++        deferred.await()
++    }
++
++    fun clearCache() {
++        imageCache.clear()
++    }
++}
+\ No newline at end of file
+Index: components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/UikitImageCache.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/UikitImageCache.kt b/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/UikitImageCache.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/iosMain/kotlin/org/jetbrains/compose/resources/platform/UikitImageCache.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,24 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.compose.resources.platform
++
++import androidx.compose.ui.graphics.ImageBitmap
++
++internal sealed interface UikitImageCache {
++    class Bitmap(val bitmap: ImageBitmap) : UikitImageCache
++}
+\ No newline at end of file
+Index: components/resources/library/src/jvmAndAndroidMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.jvmAndAndroid.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/jvmAndAndroidMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.jvmAndAndroid.kt b/components/resources/library/src/jvmAndAndroidMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.jvmAndAndroid.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/jvmAndAndroidMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.jvmAndAndroid.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,23 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * region Tencent Code
++ */
++package org.jetbrains.compose.resources.platform
++
++internal actual object PlatformImageManagerImpl : PlatformImageManager
+\ No newline at end of file
+Index: components/resources/library/src/macosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.macos.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/macosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.macos.kt b/components/resources/library/src/macosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.macos.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/macosMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.macos.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,23 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * region Tencent Code
++ */
++package org.jetbrains.compose.resources.platform
++
++internal actual object PlatformImageManagerImpl : PlatformImageManager
+\ No newline at end of file
+Index: components/resources/library/src/webMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.web.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/webMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.web.kt b/components/resources/library/src/webMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.web.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/webMain/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.web.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,23 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * region Tencent Code
++ */
++package org.jetbrains.compose.resources.platform
++
++internal actual object PlatformImageManagerImpl : PlatformImageManager
+\ No newline at end of file
+Index: components/ui-tooling-preview/library/build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/ui-tooling-preview/library/build.gradle.kts b/components/ui-tooling-preview/library/build.gradle.kts
+--- a/components/ui-tooling-preview/library/build.gradle.kts	(revision 1ad4cc50703df4bb50c91db446ee2daa695e820d)
++++ b/components/ui-tooling-preview/library/build.gradle.kts	(revision 6f60f084456e816c75fe30cb38fb511a561b1b3d)
+@@ -10,7 +10,7 @@
+ val composeVersion = extra["compose.version"] as String
+ 
+ kotlin {
+-    jvm("desktop")
++//    jvm("desktop")
+     androidTarget {
+         publishLibraryVariants("release")
+         compilations.all {
+@@ -22,17 +22,19 @@
+     iosX64()
+     iosArm64()
+     iosSimulatorArm64()
+-    js {
+-        browser {
+-        }
+-    }
+-    @OptIn(ExperimentalWasmDsl::class)
+-    wasmJs {
+-        browser {
+-        }
+-    }
+-    macosX64()
+-    macosArm64()
++//    js {
++//        browser {
++//        }
++//    }
++//    @OptIn(ExperimentalWasmDsl::class)
++//    wasmJs {
++//        browser {
++//        }
++//    }
++//    macosX64()
++//    macosArm64()
++
++    ohosArm64()
+ }
+ 
+ android {
+Index: components/gradle/libs.versions.toml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/gradle/libs.versions.toml b/components/gradle/libs.versions.toml
+--- a/components/gradle/libs.versions.toml	(revision f07aee39988d2c25f43712437f5bbae521d4a310)
++++ b/components/gradle/libs.versions.toml	(revision 4c878560a3b9acff12cf09e2066d38e60923be8e)
+@@ -1,5 +1,6 @@
+ [versions]
+-kotlinx-coroutines = "1.7.3"
++kotlin = "2.0.21-KBA-001"
++kotlinx-coroutines = "1.8.0-KBA-001"
+ androidx-appcompat = "1.6.1"
+ androidx-activity-compose = "1.8.2"
+ androidx-test = "1.5.0"
+@@ -13,4 +14,7 @@
+ androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test" }
+ androidx-compose-ui-test = { module = "androidx.compose.ui:ui-test", version.ref = "androidx-compose" }
+ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose" }
+-androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose" }
+\ No newline at end of file
++androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose" }
++
++[plugins]
++composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+\ No newline at end of file
+Index: components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt b/components/resources/library/src/appleMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
+rename from components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
+rename to components/resources/library/src/appleMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
+--- a/components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt	(revision f07aee39988d2c25f43712437f5bbae521d4a310)
++++ b/components/resources/library/src/appleMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt	(revision 79007e7201d196c30f0e8ca221f777d23fbc33cd)
+@@ -12,6 +12,7 @@
+ import platform.Foundation.NSXMLParserDelegateProtocol
+ import platform.Foundation.dataUsingEncoding
+ import platform.darwin.NSObject
++import kotlinx.cinterop.ObjCSignatureOverride
+ 
+ internal fun parse(xml: String): Element {
+     val parser = DomXmlParser()
+@@ -70,6 +71,7 @@
+ 
+     var root: Element? = null
+ 
++    @ObjCSignatureOverride
+     override fun parser(
+         parser: NSXMLParser,
+         didStartElement: String,
+@@ -93,12 +95,14 @@
+         nodeStack.add(node)
+     }
+ 
++    @ObjCSignatureOverride
+     override fun parser(parser: NSXMLParser, foundCharacters: String) {
+         nodeStack.lastOrNull()?.let { node ->
+             node.textContent = node.textContent.orEmpty() + foundCharacters
+         }
+     }
+ 
++    @ObjCSignatureOverride
+     override fun parser(
+         parser: NSXMLParser,
+         didEndElement: String,
+@@ -109,6 +113,7 @@
+         assert(node.localName.equals(didEndElement))
+     }
+ 
++    @ObjCSignatureOverride
+     override fun parser(
+         parser: NSXMLParser,
+         didStartMappingPrefix: String,
+@@ -118,15 +123,18 @@
+         curPrefixMap = curPrefixMapInverted.entries.associateBy({ it.value }, { it.key })
+     }
+ 
++    @ObjCSignatureOverride
+     override fun parser(parser: NSXMLParser, didEndMappingPrefix: String) {
+         curPrefixMapInverted.remove(didEndMappingPrefix)
+         curPrefixMap = curPrefixMapInverted.entries.associateBy({ it.value }, { it.key })
+     }
+ 
++    @ObjCSignatureOverride
+     override fun parser(parser: NSXMLParser, validationErrorOccurred: NSError) {
+         throw MalformedXMLException("validation error occurred")
+     }
+ 
++    @ObjCSignatureOverride
+     override fun parser(parser: NSXMLParser, parseErrorOccurred: NSError) {
+         throw MalformedXMLException("parse error occurred")
+     }
+Index: components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ImageResources.ohosArm64.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ImageResources.ohosArm64.kt b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ImageResources.ohosArm64.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ImageResources.ohosArm64.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,24 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.compose.resources
++
++import org.jetbrains.compose.resources.vector.xmldom.Element
++
++internal actual fun ByteArray.toXmlElement(): Element {
++    TODO("Not yet implemented")
++}
+\ No newline at end of file
+Index: components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.ohosArm64.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.ohosArm64.kt b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.ohosArm64.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.ohosArm64.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,22 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.compose.resources
++
++internal actual fun getSystemEnvironment(): ResourceEnvironment {
++    TODO("Not yet implemented")
++}
+\ No newline at end of file
+Index: components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceReader.ohosArm64.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceReader.ohosArm64.kt b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceReader.ohosArm64.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/ResourceReader.ohosArm64.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,29 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.compose.resources
++
++/**
++ * Reads the content of the resource file at the specified path and returns it as a byte array.
++ *
++ * @param path The path of the file to read in the resource's directory.
++ * @return The content of the file as a byte array.
++ */
++@InternalResourceApi
++actual suspend fun readResourceBytes(path: String): ByteArray {
++    TODO("Not yet implemented")
++}
+\ No newline at end of file
+Index: components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ohosArm64.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ohosArm64.kt b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ohosArm64.kt
+new file mode 100644
+--- /dev/null	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
++++ b/components/resources/library/src/ohosArm64Main/kotlin/org/jetbrains/compose/resources/platform/PlatformImageManager.ohosArm64.kt	(revision c300e1ad8834fc6e1813f540a95df97027f06ff5)
+@@ -0,0 +1,20 @@
++/*
++ * Tencent is pleased to support the open source community by making tvCompose available.
++ * Copyright (C) 2025 THL A29 Limited, a Tencent company. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.jetbrains.compose.resources.platform
++
++internal actual object PlatformImageManagerImpl : PlatformImageManager
+\ No newline at end of file
+Index: gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/internal/configureNativeCompilerCaching.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/internal/configureNativeCompilerCaching.kt b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/internal/configureNativeCompilerCaching.kt
+--- a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/internal/configureNativeCompilerCaching.kt	(revision 7ec4a069cfa38c876afbd8482f450635d4d4cee9)
++++ b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/experimental/internal/configureNativeCompilerCaching.kt	(revision 79007e7201d196c30f0e8ca221f777d23fbc33cd)
+@@ -23,7 +23,6 @@
+ // https://github.com/JetBrains/compose-multiplatform-core/blob/jb-main/compose/runtime/runtime/build.gradle#L75
+ private val SUPPORTED_NATIVE_TARGETS = setOf(
+     // ios
+-    KonanTarget.IOS_ARM32,
+     KonanTarget.IOS_X64,
+     KonanTarget.IOS_ARM64,
+     KonanTarget.IOS_SIMULATOR_ARM64,
+@@ -38,7 +37,6 @@
+     KonanTarget.WATCHOS_ARM64,
+     KonanTarget.WATCHOS_ARM32,
+     KonanTarget.WATCHOS_X64,
+-    KonanTarget.WATCHOS_X86, // it's going to be deprecated, see comments in KonanTarget
+     KonanTarget.WATCHOS_SIMULATOR_ARM64,
+     // mingw
+     KonanTarget.MINGW_X64,
+Index: gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/resources/ios/determineIosKonanTargetsFromEnv.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/resources/ios/determineIosKonanTargetsFromEnv.kt b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/resources/ios/determineIosKonanTargetsFromEnv.kt
+--- a/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/resources/ios/determineIosKonanTargetsFromEnv.kt	(revision 7ec4a069cfa38c876afbd8482f450635d4d4cee9)
++++ b/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/resources/ios/determineIosKonanTargetsFromEnv.kt	(revision 79007e7201d196c30f0e8ca221f777d23fbc33cd)
+@@ -17,7 +17,6 @@
+             targets.addAll(archs.map { arch ->
+                 when (arch) {
+                     "arm64", "arm64e" -> KonanTarget.IOS_ARM64
+-                    "armv7", "armv7s" -> KonanTarget.IOS_ARM32
+                     else -> error("Unknown iOS device arch: '$arch'")
+                 }
+             })
+Index: components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/Resource.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/Resource.kt b/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/Resource.kt
+--- a/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/Resource.kt	(revision f8784f7efda3b7b823b7e0de9ee7b5b627d973b7)
++++ b/components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/Resource.kt	(revision ecb0f372176cf022fe0d1c7d2d3de6de0d3bf1c2)
+@@ -30,6 +30,11 @@
+         return id == other.id
+     }
+ 
++    // region TencentCode
++    @OptIn(InternalResourceApi::class)
++    fun resourceItemPath(): String? = items.firstOrNull()?.path
++    // endregion
++
+     override fun hashCode(): Int {
+         return id.hashCode()
+     }
+diff --git a/components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt b/components/resources/library/src/appleMain/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt
+rename from components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt
+rename to components/resources/library/src/appleMain/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt

@@ -1,0 +1,1144 @@
+Subject: [PATCH] Publish OV androidx.lifecycle 2.8.0
+---
+Index: gradle/wrapper/gradle-wrapper.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/gradle/wrapper/gradle-wrapper.properties b/gradle/wrapper/gradle-wrapper.properties
+--- a/gradle/wrapper/gradle-wrapper.properties	(revision ef320e8bfe60558e9ffb4b44a5f2a730026acf80)
++++ b/gradle/wrapper/gradle-wrapper.properties	(revision 632782629a0f0835550ef69469263990e579739c)
+@@ -1,6 +1,6 @@
+ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
+-distributionUrl=../../../../tools/external/gradle/gradle-8.7-bin.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
+ distributionSha256Sum=544c35d6bd849ae8a5ed0bcea39ba677dc40f49df7d1835561582da2009b961d
+ zipStoreBase=GRADLE_USER_HOME
+ zipStorePath=wrapper/dists
+Index: settings.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/settings.gradle b/settings.gradle
+--- a/settings.gradle	(revision ef320e8bfe60558e9ffb4b44a5f2a730026acf80)
++++ b/settings.gradle	(revision 3837081051529064da9b4f24789c67684e8c6bf1)
+@@ -11,6 +11,9 @@
+             maven {
+                 url = "https://plugins.gradle.org/m2/"
+             }
++            maven {
++                url = "https://mirrors.tencent.com/nexus/repository/maven-public"
++            }
+         }
+     }
+ }
+@@ -384,10 +387,10 @@
+ includeProject(":autofill:autofill", [BuildType.MAIN])
+ includeProject(":benchmark:benchmark-benchmark", "benchmark/benchmark", [BuildType.MAIN, BuildType.COMPOSE])
+ includeProject(":benchmark:benchmark-common")
+-includeProject(":benchmark:benchmark-darwin", [BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":benchmark:benchmark-darwin-core", [BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":benchmark:benchmark-darwin-samples", [BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":benchmark:benchmark-darwin-gradle-plugin", [BuildType.INFRAROGUE, BuildType.KMP])
++includeProject(":benchmark:benchmark-darwin", [BuildType.INFRAROGUE])
++includeProject(":benchmark:benchmark-darwin-core", [BuildType.INFRAROGUE])
++includeProject(":benchmark:benchmark-darwin-samples", [BuildType.INFRAROGUE])
++includeProject(":benchmark:benchmark-darwin-gradle-plugin", [BuildType.INFRAROGUE])
+ includeProject(":benchmark:benchmark-gradle-plugin", "benchmark/gradle-plugin", [BuildType.MAIN])
+ includeProject(":benchmark:benchmark-baseline-profile-gradle-plugin", "benchmark/baseline-profile-gradle-plugin", [BuildType.MAIN, BuildType.COMPOSE])
+ includeProject(":benchmark:benchmark-junit4")
+@@ -458,11 +461,11 @@
+ includeProject(":car:app:app-samples:showcase-mobile", "car/app/app-samples/showcase/mobile", [BuildType.MAIN])
+ includeProject(":car:app:app-testing", [BuildType.MAIN])
+ includeProject(":cardview:cardview", [BuildType.MAIN])
+-includeProject(":collection:collection", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":collection:collection-benchmark", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":collection:collection-benchmark-kmp", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":collection:collection-ktx", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":collection:integration-tests:testapp", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
++includeProject(":collection:collection", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":collection:collection-benchmark", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":collection:collection-benchmark-kmp", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":collection:collection-ktx", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":collection:integration-tests:testapp", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":compose:animation", [BuildType.COMPOSE])
+ includeProject(":compose:animation:animation", [BuildType.COMPOSE])
+ includeProject(":compose:animation:animation-lint", [BuildType.COMPOSE])
+@@ -484,9 +487,9 @@
+ includeProject(":compose:compiler:compiler-hosted:runtime-tests", [BuildType.COMPOSE])
+ includeProject(":compose:compiler:compiler-hosted:integration-tests:kotlin-compiler-repackaged", [BuildType.COMPOSE])
+ includeProject(":compose:compiler:compiler-hosted:integration-tests:protobuf-test-classes", [BuildType.COMPOSE])
+-includeProject(":compose:desktop", [BuildType.COMPOSE, BuildType.KMP])
+-includeProject(":compose:desktop:desktop", [BuildType.COMPOSE, BuildType.KMP])
+-includeProject(":compose:desktop:desktop:desktop-samples", "compose/desktop/desktop/samples", [BuildType.COMPOSE, BuildType.KMP])
++includeProject(":compose:desktop", [BuildType.COMPOSE])
++includeProject(":compose:desktop:desktop", [BuildType.COMPOSE])
++includeProject(":compose:desktop:desktop:desktop-samples", "compose/desktop/desktop/samples", [BuildType.COMPOSE])
+ includeProject(":compose:foundation", [BuildType.COMPOSE])
+ includeProject(":compose:foundation:foundation", [BuildType.COMPOSE])
+ includeProject(":compose:foundation:foundation-benchmark", "compose/foundation/foundation/benchmark", [BuildType.COMPOSE])
+@@ -545,7 +548,7 @@
+ includeProject(":compose:material3:material3:integration-tests:material3-catalog", [BuildType.COMPOSE])
+ includeProject(":compose:material:material:material-samples", "compose/material/material/samples", [BuildType.COMPOSE])
+ includeProject(":compose:material3:material3:material3-samples", "compose/material3/material3/samples", [BuildType.COMPOSE])
+-includeProject(":compose:runtime:runtime", [BuildType.COMPOSE, BuildType.KMP])
++includeProject(":compose:runtime:runtime", [BuildType.COMPOSE])
+ includeProject(":compose:runtime:runtime-lint", [BuildType.COMPOSE])
+ includeProject(":compose:runtime:runtime-livedata", [BuildType.COMPOSE])
+ includeProject(":compose:runtime:runtime-livedata:runtime-livedata-samples", "compose/runtime/runtime-livedata/samples", [BuildType.COMPOSE])
+@@ -649,20 +652,20 @@
+ includeProject(":cursoradapter:cursoradapter", [BuildType.MAIN])
+ includeProject(":customview:customview", [BuildType.MAIN])
+ includeProject(":customview:customview-poolingcontainer", [BuildType.MAIN, BuildType.COMPOSE])
+-includeProject(":datastore:datastore", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-benchmark", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-core", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-core-okio", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
++includeProject(":datastore:datastore", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-benchmark", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-core", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-core-okio", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":datastore:datastore-compose-samples", [BuildType.COMPOSE])
+-includeProject(":datastore:datastore-preferences", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-preferences-core", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-preferences-proto", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-preferences-rxjava2", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-preferences-rxjava3", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-proto", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-rxjava2", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-rxjava3", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
+-includeProject(":datastore:datastore-sampleapp", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
++includeProject(":datastore:datastore-preferences", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-preferences-core", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-preferences-proto", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-preferences-rxjava2", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-preferences-rxjava3", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-proto", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-rxjava2", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-rxjava3", [BuildType.MAIN, BuildType.INFRAROGUE])
++includeProject(":datastore:datastore-sampleapp", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":documentfile:documentfile", [BuildType.MAIN])
+ includeProject(":draganddrop:draganddrop", [BuildType.MAIN])
+ includeProject(":draganddrop:integration-tests:sampleapp", [BuildType.MAIN])
+@@ -821,7 +824,7 @@
+ includeProject(":navigation:navigation-ui", [BuildType.MAIN, BuildType.FLAN])
+ includeProject(":navigation:navigation-ui-ktx", [BuildType.MAIN, BuildType.FLAN])
+ includeProject(":paging:integration-tests:testapp", [BuildType.MAIN])
+-includeProject(":paging:paging-common", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE, BuildType.KMP])
++includeProject(":paging:paging-common", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE])
+ includeProject(":paging:paging-common-ktx", [BuildType.MAIN, BuildType.COMPOSE])
+ includeProject(":paging:paging-compose", [BuildType.COMPOSE])
+ includeProject(":paging:paging-compose:paging-compose-samples", "paging/paging-compose/samples", [BuildType.COMPOSE])
+@@ -833,7 +836,7 @@
+ includeProject(":paging:paging-rxjava2-ktx", [BuildType.MAIN])
+ includeProject(":paging:paging-rxjava3", [BuildType.MAIN])
+ includeProject(":paging:paging-samples", "paging/samples", [BuildType.MAIN, BuildType.COMPOSE])
+-includeProject(":paging:paging-testing", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE, BuildType.KMP])
++includeProject(":paging:paging-testing", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE])
+ includeProject(":palette:palette", [BuildType.MAIN])
+ includeProject(":palette:palette-ktx", [BuildType.MAIN])
+ includeProject(":pdf:pdf-viewer", [BuildType.MAIN])
+@@ -888,28 +891,28 @@
+ includeProject(":room:integration-tests:room-incremental-annotation-processing", "room/integration-tests/incremental-annotation-processing", [BuildType.MAIN])
+ includeProject(":room:integration-tests:room-testapp", "room/integration-tests/testapp", [BuildType.MAIN])
+ includeProject(":room:integration-tests:room-testapp-autovalue", "room/integration-tests/autovaluetestapp", [BuildType.MAIN])
+-includeProject(":room:integration-tests:room-testapp-kotlin", "room/integration-tests/kotlintestapp", [BuildType.MAIN, BuildType.KMP])
+-includeProject(":room:integration-tests:room-testapp-multiplatform", "room/integration-tests/multiplatformtestapp", [BuildType.MAIN, BuildType.KMP, BuildType.INFRAROGUE])
++includeProject(":room:integration-tests:room-testapp-kotlin", "room/integration-tests/kotlintestapp", [BuildType.MAIN])
++includeProject(":room:integration-tests:room-testapp-multiplatform", "room/integration-tests/multiplatformtestapp", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":room:integration-tests:room-testapp-noappcompat", "room/integration-tests/noappcompattestapp", [BuildType.MAIN])
+ includeProject(":room:room-benchmark", "room/benchmark", [BuildType.MAIN])
+-includeProject(":room:room-common", [BuildType.MAIN, BuildType.COMPOSE, BuildType.KMP, BuildType.INFRAROGUE])
+-includeProject(":room:room-compiler", [BuildType.MAIN, BuildType.COMPOSE, BuildType.KMP])
+-includeProject(":room:room-compiler-processing", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN, BuildType.KMP])
++includeProject(":room:room-common", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE])
++includeProject(":room:room-compiler", [BuildType.MAIN, BuildType.COMPOSE])
++includeProject(":room:room-compiler-processing", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN])
+ includeProject(":room:room-compiler-processing-testing", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN])
+ includeProject(":room:room-external-antlr", [BuildType.MAIN])
+ includeProject(":room:room-guava", [BuildType.MAIN])
+ includeProject(":room:room-gradle-plugin", [BuildType.MAIN])
+ includeProject(":room:room-ktx", [BuildType.MAIN, BuildType.COMPOSE])
+-includeProject(":room:room-migration", [BuildType.MAIN, BuildType.COMPOSE, BuildType.KMP, BuildType.INFRAROGUE])
++includeProject(":room:room-migration", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE])
+ includeProject(":room:room-paging", [BuildType.MAIN, BuildType.COMPOSE])
+ includeProject(":room:room-paging-guava", [BuildType.MAIN])
+ includeProject(":room:room-paging-rxjava2", [BuildType.MAIN])
+ includeProject(":room:room-paging-rxjava3", [BuildType.MAIN])
+-includeProject(":room:room-runtime", [BuildType.MAIN, BuildType.COMPOSE, BuildType.KMP, BuildType.INFRAROGUE])
++includeProject(":room:room-runtime", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE])
+ includeProject(":room:room-runtime-lint", [BuildType.MAIN, BuildType.COMPOSE])
+ includeProject(":room:room-rxjava2", [BuildType.MAIN])
+ includeProject(":room:room-rxjava3", [BuildType.MAIN])
+-includeProject(":room:room-testing", [BuildType.MAIN, BuildType.KMP, BuildType.INFRAROGUE])
++includeProject(":room:room-testing", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":safeparcel:safeparcel", [BuildType.MAIN])
+ includeProject(":safeparcel:safeparcel-processor", [BuildType.MAIN])
+ includeProject(":savedstate:savedstate", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN])
+@@ -933,12 +936,12 @@
+ includeProject(":slice:slice-view", [BuildType.MAIN])
+ includeProject(":slidingpanelayout:slidingpanelayout", [BuildType.MAIN, BuildType.FLAN])
+ includeProject(":slidingpanelayout:slidingpanelayout-testapp", [BuildType.MAIN])
+-includeProject(":sqlite:integration-tests:driver-conformance-test", [BuildType.MAIN, BuildType.KMP, BuildType.INFRAROGUE])
++includeProject(":sqlite:integration-tests:driver-conformance-test", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":sqlite:integration-tests:inspection-room-testapp", [BuildType.MAIN])
+ includeProject(":sqlite:integration-tests:inspection-sqldelight-testapp", [BuildType.MAIN])
+-includeProject(":sqlite:sqlite", [BuildType.MAIN, BuildType.COMPOSE, BuildType.KMP, BuildType.INFRAROGUE])
+-includeProject(":sqlite:sqlite-framework", [BuildType.MAIN, BuildType.COMPOSE, BuildType.KMP, BuildType.INFRAROGUE])
+-includeProject(":sqlite:sqlite-bundled", [BuildType.MAIN, BuildType.KMP, BuildType.INFRAROGUE])
++includeProject(":sqlite:sqlite", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE])
++includeProject(":sqlite:sqlite-framework", [BuildType.MAIN, BuildType.COMPOSE, BuildType.INFRAROGUE])
++includeProject(":sqlite:sqlite-bundled", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":sqlite:sqlite-inspection", [BuildType.MAIN])
+ includeProject(":sqlite:sqlite-ktx", [BuildType.MAIN])
+ includeProject(":startup:integration-tests:first-library", [BuildType.MAIN])
+@@ -1064,7 +1067,7 @@
+ includeProject(":window:integration-tests:macrobenchmark", [BuildType.MAIN, BuildType.WINDOW])
+ includeProject(":window:sidecar:sidecar", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN, BuildType.WINDOW])
+ includeProject(":window:window-java", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN, BuildType.WINDOW])
+-includeProject(":window:window-core", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN, BuildType.INFRAROGUE, BuildType.KMP, BuildType.WINDOW])
++includeProject(":window:window-core", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN, BuildType.INFRAROGUE, BuildType.WINDOW])
+ includeProject(":window:window-rxjava2", [BuildType.MAIN, BuildType.WINDOW])
+ includeProject(":window:window-rxjava3", [BuildType.MAIN, BuildType.WINDOW])
+ includeProject(":window:window-demos:demo", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN, BuildType.WINDOW])
+@@ -1132,7 +1135,7 @@
+ /////////////////////////////
+ 
+ includeProject(":internal-testutils-common", "testutils/testutils-common", [BuildType.MAIN, BuildType.COMPOSE, BuildType.FLAN])
+-includeProject(":internal-testutils-datastore", "testutils/testutils-datastore", [BuildType.MAIN, BuildType.INFRAROGUE, BuildType.KMP])
++includeProject(":internal-testutils-datastore", "testutils/testutils-datastore", [BuildType.MAIN, BuildType.INFRAROGUE])
+ includeProject(":internal-testutils-runtime", "testutils/testutils-runtime", [BuildType.MAIN, BuildType.FLAN, BuildType.COMPOSE, BuildType.MEDIA, BuildType.WEAR])
+ includeProject(":internal-testutils-appcompat", "testutils/testutils-appcompat", [BuildType.MAIN])
+ includeProject(":internal-testutils-espresso", "testutils/testutils-espresso", [BuildType.MAIN, BuildType.COMPOSE])
+Index: buildSrc/repos.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/repos.gradle b/buildSrc/repos.gradle
+--- a/buildSrc/repos.gradle	(revision 632782629a0f0835550ef69469263990e579739c)
++++ b/buildSrc/repos.gradle	(revision 3837081051529064da9b4f24789c67684e8c6bf1)
+@@ -63,6 +63,9 @@
+             }
+         }
+     }
++    handler.maven {
++        url = "https://mirrors.tencent.com/nexus/repository/maven-public"
++    }
+     if (System.getenv("ALLOW_PUBLIC_REPOS") != null || System.getProperty("ALLOW_PUBLIC_REPOS") != null) {
+         handler.mavenCentral()
+         handler.google()
+Index: gradle/libs.versions.toml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+--- a/gradle/libs.versions.toml	(revision 632782629a0f0835550ef69469263990e579739c)
++++ b/gradle/libs.versions.toml	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -20,8 +20,8 @@
+ androidxTestCore = "1.6.0-alpha05"
+ androidxTestExtJunit = "1.2.0-alpha03"
+ androidxTestExtTruth = "1.6.0-alpha03"
+-annotationVersion = "1.7.0"
+-atomicFu = "0.17.0"
++annotationVersion = "1.8.0-KBA-001"
++atomicFu = "0.23.2-KBA-001"
+ autoService = "1.0-rc6"
+ autoValue = "1.6.3"
+ binaryCompatibilityValidator = "0.15.0-Beta.2"
+@@ -41,12 +41,12 @@
+ jcodec = "0.2.5"
+ kotlin17 = "1.7.10"
+ kotlin18 = "1.8.22"
+-kotlin19 = "1.9.23"
+-kotlin = "1.9.23"
++kotlin19 = "1.9.23-dev-202"
++kotlin = "2.0.21-KBA-001"
+ kotlinBenchmark = "0.4.8"
+-kotlinNative = "1.9.23"
++kotlinNative = "2.0.21-KBA-001"
+ kotlinCompileTesting = "1.4.9"
+-kotlinCoroutines = "1.7.3"
++kotlinCoroutines = "1.8.0-KBA-001"
+ kotlinSerialization = "1.6.3"
+ ksp = "1.9.23-1.0.19"
+ ktfmt = "0.45"
+Index: playground-common/playground-plugin/settings.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/playground-common/playground-plugin/settings.gradle b/playground-common/playground-plugin/settings.gradle
+--- a/playground-common/playground-plugin/settings.gradle	(revision 632782629a0f0835550ef69469263990e579739c)
++++ b/playground-common/playground-plugin/settings.gradle	(revision 3837081051529064da9b4f24789c67684e8c6bf1)
+@@ -21,6 +21,9 @@
+         gradlePluginPortal().content {
+             it.includeModule("org.jetbrains.kotlin.jvm", "org.jetbrains.kotlin.jvm.gradle.plugin")
+         }
++        maven {
++            url = "https://mirrors.tencent.com/nexus/repository/maven-public"
++        }
+     }
+ }
+ 
+@@ -36,6 +39,9 @@
+                     "com.github.johnrengelman.shadow.gradle.plugin")
+             it.includeModule("com.github.johnrengelman", "shadow")
+         }
++        maven {
++            url = "https://mirrors.tencent.com/nexus/repository/maven-public"
++        }
+     }
+ }
+ 
+Index: buildSrc/private/src/main/kotlin/androidx/build/AndroidXMultiplatformExtension.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXMultiplatformExtension.kt b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXMultiplatformExtension.kt
+--- a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXMultiplatformExtension.kt	(revision d3b0612e1c59a8e1a6746fc3fee2dd66595621db)
++++ b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXMultiplatformExtension.kt	(revision c72178d7fe345a088b99a5ead48a90dbf02bfab0)
+@@ -492,6 +492,20 @@
+         }
+     }
+ 
++    @JvmOverloads
++    fun ohosArm64(block: Action<KotlinNativeTarget>? = null): KotlinNativeTarget? {
++        supportedPlatforms.add(PlatformIdentifier.OHOS_ARM_64)
++        return if (project.enableOhosNative()) {
++            if (block == null) kotlinExtension.ohosArm64() else kotlinExtension.ohosArm64(block)
++        } else {
++            null
++        }
++    }
++
++    @JvmOverloads
++    fun ohosNative(block: Action<KotlinNativeTarget>? = null): List<KotlinNativeTarget> =
++        listOfNotNull(ohosArm64(block))
++
+     @JvmOverloads
+     fun linux(block: Action<KotlinNativeTarget>? = null): List<KotlinNativeTarget> {
+         return listOfNotNull(
+Index: buildSrc/public/src/main/kotlin/androidx/build/KmpPlatforms.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/public/src/main/kotlin/androidx/build/KmpPlatforms.kt b/buildSrc/public/src/main/kotlin/androidx/build/KmpPlatforms.kt
+--- a/buildSrc/public/src/main/kotlin/androidx/build/KmpPlatforms.kt	(revision d3b0612e1c59a8e1a6746fc3fee2dd66595621db)
++++ b/buildSrc/public/src/main/kotlin/androidx/build/KmpPlatforms.kt	(revision 5d2362ae655d6540d1cff8f26e68fd687253f881)
+@@ -37,7 +37,8 @@
+     MAC,
+     LINUX,
+     DESKTOP,
+-    ANDROID_NATIVE;
++    ANDROID_NATIVE,
++    OHOS_NATIVE;
+ 
+     companion object {
+         /** Target platform groups which require native compilation (e.g. LLVM). */
+@@ -49,7 +50,7 @@
+          * Do *not* enable [JS] unless you have read and understand this:
+          * https://blog.jetbrains.com/kotlin/2021/10/important-ua-parser-js-exploit-and-kotlin-js/
+          */
+-        val enabledByDefault = listOf(JVM, DESKTOP, MAC, LINUX, ANDROID_NATIVE)
++        val enabledByDefault = listOf(JVM, DESKTOP, MAC, LINUX, ANDROID_NATIVE, OHOS_NATIVE)
+     }
+ }
+ 
+@@ -71,6 +72,7 @@
+     IOS_SIMULATOR_ARM_64("iossimulatorarm64", PlatformGroup.MAC),
+     IOS_X_64("iosx64", PlatformGroup.MAC),
+     IOS_ARM_64("iosarm64", PlatformGroup.MAC),
++    OHOS_ARM_64("ohosarm64", PlatformGroup.OHOS_NATIVE),
+     DESKTOP("desktop", PlatformGroup.JVM);
+ 
+     companion object {
+@@ -124,6 +126,9 @@
+ fun Project.enableAndroidNative(): Boolean =
+     enabledKmpPlatforms.contains(PlatformGroup.ANDROID_NATIVE)
+ 
++fun Project.enableOhosNative(): Boolean =
++    enabledKmpPlatforms.contains(PlatformGroup.OHOS_NATIVE)
++
+ fun Project.enableMac(): Boolean =
+     enabledKmpPlatforms.contains(PlatformGroup.MAC) && HostManager.hostIsMac
+ 
+Index: buildSrc/private/src/main/kotlin/androidx/build/MavenUploadHelper.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/private/src/main/kotlin/androidx/build/MavenUploadHelper.kt b/buildSrc/private/src/main/kotlin/androidx/build/MavenUploadHelper.kt
+--- a/buildSrc/private/src/main/kotlin/androidx/build/MavenUploadHelper.kt	(revision e135428d6f4a03be8f102493cbe9352139baf48b)
++++ b/buildSrc/private/src/main/kotlin/androidx/build/MavenUploadHelper.kt	(revision aa53561ec2e3798b1f556e02d28c82e6565d4242)
+@@ -30,10 +30,12 @@
+ import java.io.StringWriter
+ import org.dom4j.Element
+ import org.dom4j.io.XMLWriter
++import org.gradle.api.Action
+ import org.gradle.api.GradleException
+ import org.gradle.api.Project
+ import org.gradle.api.XmlProvider
+ import org.gradle.api.artifacts.Configuration
++import org.gradle.api.artifacts.repositories.PasswordCredentials
+ import org.gradle.api.component.ComponentWithVariants
+ import org.gradle.api.component.SoftwareComponent
+ import org.gradle.api.component.SoftwareComponentFactory
+@@ -101,7 +103,7 @@
+ private fun Project.validateTaskIsRegistered(taskName: String) =
+     tasks.findByName(taskName) ?: throw GradleException(
+         "Project $name is configured for publishing, but a '$taskName' task was never " +
+-        "registered. This is likely a bug in AndroidX plugin configuration."
++            "registered. This is likely a bug in AndroidX plugin configuration."
+     )
+ 
+ private fun Project.releaseTaskShouldBeRegistered(extension: AndroidXExtension): Boolean {
+@@ -159,6 +161,17 @@
+ 
+     configure<PublishingExtension> {
+         repositories { it.maven { repo -> repo.setUrl(getRepositoryDirectory()) } }
++        repositories {
++            it.maven { repo ->
++                repo.name = "RemoteMaven"
++                repo.setUrl(findProperty("maven.remote.url").toString())
++                val passwordCredentials = Action<PasswordCredentials> { credentials ->
++                    credentials.username = findProperty("maven.remote.username")?.toString()
++                    credentials.password = findProperty("maven.remote.password")?.toString()
++                }
++                repo.credentials(passwordCredentials)
++            }
++        }
+         publications {
+             if (appliesJavaGradlePluginPlugin()) {
+                 // The 'java-gradle-plugin' will also add to the 'pluginMaven' publication
+@@ -199,10 +212,10 @@
+                     "." + project.name.toString().replace('-', '.') + ".anchor"
+                 val unpackedStubAarTask =
+                     tasks.register("unpackedStubAar", UnpackedStubAarTask::class.java) { aarTask ->
+-                    aarTask.aarPackage.set(stubNamespace)
+-                    aarTask.minSdkVersion.set(baseExtension.defaultConfig.minSdk)
+-                    aarTask.outputDir.set(buildDir.dir("intermediates/stub-aar"))
+-                }
++                        aarTask.aarPackage.set(stubNamespace)
++                        aarTask.minSdkVersion.set(baseExtension.defaultConfig.minSdk)
++                        aarTask.outputDir.set(buildDir.dir("intermediates/stub-aar"))
++                    }
+                 val stubAarTask = tasks.register("stubAar", Zip::class.java) { zipTask ->
+                     zipTask.from(unpackedStubAarTask.flatMap { it.outputDir })
+                     zipTask.destinationDirectory.set(buildDir.dir("outputs"))
+@@ -271,24 +284,24 @@
+     val document = parseXml(pom, namespaceUris)
+ 
+     // For each <dependencies> element, sort the contained elements in-place.
+-    document.rootElement.selectNodes("ns:dependencies").filterIsInstance<Element>().forEach {
+-        element ->
+-        val deps = element.elements()
+-        val sortedDeps = deps.toSortedSet(compareBy { it.stringValue }).toList()
++    document.rootElement.selectNodes("ns:dependencies").filterIsInstance<Element>()
++        .forEach { element ->
++            val deps = element.elements()
++            val sortedDeps = deps.toSortedSet(compareBy { it.stringValue }).toList()
+ 
+-        // Content contains formatting nodes, so to avoid modifying those we replace
+-        // each element with the sorted element from its respective index. Note this
+-        // will not move adjacent elements, so any comments would remain in their
+-        // original order.
+-        element.content().replaceAll {
+-            val index = deps.indexOf(it)
+-            if (index >= 0) {
+-                sortedDeps[index]
+-            } else {
+-                it
+-            }
+-        }
+-    }
++            // Content contains formatting nodes, so to avoid modifying those we replace
++            // each element with the sorted element from its respective index. Note this
++            // will not move adjacent elements, so any comments would remain in their
++            // original order.
++            element.content().replaceAll {
++                val index = deps.indexOf(it)
++                if (index >= 0) {
++                    sortedDeps[index]
++                } else {
++                    it
++                }
++            }
++        }
+ 
+     // Write to string. Note that this does not preserve the original indent level, but it
+     // does preserve line breaks -- not that any of this matters for client XML parsing.
+@@ -395,7 +408,7 @@
+                                 // Include sources artifact we built and root artifacts from kotlin
+                                 // plugin.
+                                 return (sourcesComponents.flatMap { it.usages } +
+-                                        kotlinComponent.usages)
++                                    kotlinComponent.usages)
+                                     .toMutableSet()
+                             }
+ 
+@@ -482,8 +495,8 @@
+     val strippedGroupId = mavenGroup.group.substringAfterLast(".")
+     if (
+         !extension.bypassCoordinateValidation &&
+-            mavenGroup.group.startsWith("androidx") &&
+-            !name.startsWith(strippedGroupId)
++        mavenGroup.group.startsWith("androidx") &&
++        !name.startsWith(strippedGroupId)
+     ) {
+         throw Exception("Your artifactId must start with '$strippedGroupId'. (currently is $name)")
+     }
+Index: buildSrc/private/src/main/kotlin/androidx/build/AndroidXExtension.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXExtension.kt b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXExtension.kt
+--- a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXExtension.kt	(revision a7e95d2ba7e58568fe768e436ca6edae271fe6bc)
++++ b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXExtension.kt	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -234,13 +234,13 @@
+                         ")"
+                 )
+             } else {
+-                verifyVersionExtraFormat(mavenVersion)
++//                verifyVersionExtraFormat(mavenVersion)
+                 version = mavenVersion
+             }
+         } else {
+             projectDirectlySpecifiesMavenVersion = false
+             if (groupVersion != null) {
+-                verifyVersionExtraFormat(groupVersion)
++//                verifyVersionExtraFormat(groupVersion)
+                 version = groupVersion
+             } else {
+                 return
+@@ -255,28 +255,58 @@
+ 
+     private fun verifyVersionExtraFormat(version: Version) {
+         val ALLOWED_EXTRA_PREFIXES = listOf("-alpha", "-beta", "-rc", "-dev", "-SNAPSHOT")
+-        val extra = version.extra
+-        if (extra != null) {
+-            if (!version.isSnapshot() && project.isVersionExtraCheckEnabled()) {
+-                if (ALLOWED_EXTRA_PREFIXES.any { extra.startsWith(it) }) {
+-                    for (potentialPrefix in ALLOWED_EXTRA_PREFIXES) {
+-                        if (extra.startsWith(potentialPrefix)) {
+-                            val secondExtraPart = extra.removePrefix(potentialPrefix)
+-                            if (secondExtraPart.toIntOrNull() == null) {
+-                                throw IllegalArgumentException(
+-                                    "Version $version is not" +
+-                                        " a properly formatted version, please ensure that " +
+-                                        "$potentialPrefix is followed by a number only"
+-                                )
+-                            }
+-                        }
+-                    }
+-                } else {
+-                    throw IllegalArgumentException(
+-                        "Version $version is not a proper " +
+-                            "version, version suffixes following major.minor.patch should " +
+-                            "be one of ${ALLOWED_EXTRA_PREFIXES.joinToString(", ")}"
+-                    )
++        if (project.isSubversionCheckEnabled()) {
++            val subVersion = version.subVersion()
++                ?: throw IllegalArgumentException("Version $version is not a properly formatted version, version should be something like major.minor.patch-x.y.z")
++            val extra = subVersion.extra
++            if (extra != null) {
++                if (!version.isSnapshot() && project.isVersionExtraCheckEnabled()) {
++                    if (ALLOWED_EXTRA_PREFIXES.any { extra.startsWith(it) }) {
++                        for (potentialPrefix in ALLOWED_EXTRA_PREFIXES) {
++                            if (extra.startsWith(potentialPrefix)) {
++                                val secondExtraPart = extra.removePrefix(potentialPrefix)
++                                if (secondExtraPart.toIntOrNull() == null) {
++                                    throw IllegalArgumentException(
++                                        "Version $version is not" +
++                                            " a properly formatted version, please ensure that " +
++                                            "$potentialPrefix is followed by a number only"
++                                    )
++                                }
++                            }
++                        }
++                    } else {
++                        throw IllegalArgumentException(
++                            "Version $version is not a proper " +
++                                "version, version suffixes following major.minor.patch-x.y.z should " +
++                                "be one of ${ALLOWED_EXTRA_PREFIXES.joinToString(", ")}"
++                        )
++                    }
++                }
++            }
++        } else {
++            val extra = version.extra
++            if (extra != null) {
++                if (!version.isSnapshot() && project.isVersionExtraCheckEnabled()) {
++                    if (ALLOWED_EXTRA_PREFIXES.any { extra.startsWith(it) }) {
++                        for (potentialPrefix in ALLOWED_EXTRA_PREFIXES) {
++                            if (extra.startsWith(potentialPrefix)) {
++                                val secondExtraPart = extra.removePrefix(potentialPrefix)
++                                if (secondExtraPart.toIntOrNull() == null) {
++                                    throw IllegalArgumentException(
++                                        "Version $version is not" +
++                                            " a properly formatted version, please ensure that " +
++                                            "$potentialPrefix is followed by a number only"
++                                    )
++                                }
++                            }
++                        }
++                    } else {
++                        throw IllegalArgumentException(
++                            "Version $version is not a proper " +
++                                "version, version suffixes following major.minor.patch should " +
++                                "be one of ${ALLOWED_EXTRA_PREFIXES.joinToString(", ")}"
++                        )
++                    }
+                 }
+             }
+         }
+Index: buildSrc/private/src/main/kotlin/androidx/build/AndroidXGradleProperties.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXGradleProperties.kt b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXGradleProperties.kt
+--- a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXGradleProperties.kt	(revision a7e95d2ba7e58568fe768e436ca6edae271fe6bc)
++++ b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXGradleProperties.kt	(revision 6fe6c4cc69ab57b02f7bc10cfb032dbce5fcfd81)
+@@ -50,6 +50,8 @@
+  */
+ const val VERSION_EXTRA_CHECK_ENABLED = "androidx.versionExtraCheckEnabled"
+ 
++const val SUBVERSION_CHECK_ENABLED = "androidx.subVersionCheckEnabled"
++
+ /** Validate the project structure against Jetpack guidelines */
+ const val VALIDATE_PROJECT_STRUCTURE = "androidx.validateProjectStructure"
+ 
+@@ -229,6 +231,9 @@
+ fun Project.isVersionExtraCheckEnabled(): Boolean =
+     findBooleanProperty(VERSION_EXTRA_CHECK_ENABLED) ?: true
+ 
++fun Project.isSubversionCheckEnabled(): Boolean =
++    findBooleanProperty(SUBVERSION_CHECK_ENABLED) ?: false
++
+ /** Validate the project structure against Jetpack guidelines */
+ fun Project.isValidateProjectStructureEnabled(): Boolean =
+     findBooleanProperty(VALIDATE_PROJECT_STRUCTURE) ?: true
+Index: buildSrc/public/src/main/kotlin/androidx/build/Version.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/public/src/main/kotlin/androidx/build/Version.kt b/buildSrc/public/src/main/kotlin/androidx/build/Version.kt
+--- a/buildSrc/public/src/main/kotlin/androidx/build/Version.kt	(revision a7e95d2ba7e58568fe768e436ca6edae271fe6bc)
++++ b/buildSrc/public/src/main/kotlin/androidx/build/Version.kt	(revision 6fe6c4cc69ab57b02f7bc10cfb032dbce5fcfd81)
+@@ -36,6 +36,8 @@
+         else null
+     )
+ 
++    fun subVersion(): Version? = extra?.takeIf { it.startsWith("-") }?.let { Version(it.drop(1)) }
++
+     fun isPatch(): Boolean = patch != 0
+ 
+     fun isSnapshot(): Boolean = "-SNAPSHOT" == extra
+Index: libraryversions.toml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/libraryversions.toml b/libraryversions.toml
+--- a/libraryversions.toml	(revision 6fe6c4cc69ab57b02f7bc10cfb032dbce5fcfd81)
++++ b/libraryversions.toml	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -93,7 +93,7 @@
+ LEANBACK_TAB = "1.1.0-beta01"
+ LEGACY = "1.1.0-alpha01"
+ LIBYUV = "0.1.0-dev01"
+-LIFECYCLE = "2.8.0"
++LIFECYCLE = "2.8.0-KBA-001"
+ LIFECYCLE_EXTENSIONS = "2.2.0"
+ LINT = "1.0.0-alpha01"
+ LOADER = "1.2.0-alpha01"
+Index: lifecycle/lifecycle-common/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/lifecycle/lifecycle-common/build.gradle b/lifecycle/lifecycle-common/build.gradle
+--- a/lifecycle/lifecycle-common/build.gradle	(revision 6fe6c4cc69ab57b02f7bc10cfb032dbce5fcfd81)
++++ b/lifecycle/lifecycle-common/build.gradle	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
+@@ -37,6 +37,7 @@
+     mac()
+     linux()
+     ios()
++    ohosNative()
+ 
+     kotlin {
+         explicitApi = ExplicitApiMode.Strict
+@@ -49,7 +50,7 @@
+             dependencies {
+                 api(libs.kotlinStdlib)
+                 api(libs.kotlinCoroutinesCore)
+-                api("androidx.annotation:annotation:1.8.0")
++                api(libs.androidx.annotation)
+             }
+         }
+ 
+Index: lifecycle/lifecycle-common/gradle.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/lifecycle/lifecycle-common/gradle.properties b/lifecycle/lifecycle-common/gradle.properties
+new file mode 100644
+--- /dev/null	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
++++ b/lifecycle/lifecycle-common/gradle.properties	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
+@@ -0,0 +1,1 @@
++androidx.subVersionCheckEnabled=true
+\ No newline at end of file
+Index: lifecycle/lifecycle-runtime-ktx/gradle.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/lifecycle/lifecycle-runtime-ktx/gradle.properties b/lifecycle/lifecycle-runtime-ktx/gradle.properties
+new file mode 100644
+--- /dev/null	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
++++ b/lifecycle/lifecycle-runtime-ktx/gradle.properties	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
+@@ -0,0 +1,1 @@
++androidx.subVersionCheckEnabled=true
+\ No newline at end of file
+Index: lifecycle/lifecycle-runtime-lint/gradle.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/lifecycle/lifecycle-runtime-lint/gradle.properties b/lifecycle/lifecycle-runtime-lint/gradle.properties
+new file mode 100644
+--- /dev/null	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
++++ b/lifecycle/lifecycle-runtime-lint/gradle.properties	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
+@@ -0,0 +1,1 @@
++androidx.subVersionCheckEnabled=true
+\ No newline at end of file
+Index: lifecycle/lifecycle-runtime/gradle.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/lifecycle/lifecycle-runtime/gradle.properties b/lifecycle/lifecycle-runtime/gradle.properties
+new file mode 100644
+--- /dev/null	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
++++ b/lifecycle/lifecycle-runtime/gradle.properties	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
+@@ -0,0 +1,1 @@
++androidx.subVersionCheckEnabled=true
+\ No newline at end of file
+Index: lifecycle/lifecycle-viewmodel/gradle.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/lifecycle/lifecycle-viewmodel/gradle.properties b/lifecycle/lifecycle-viewmodel/gradle.properties
+new file mode 100644
+--- /dev/null	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
++++ b/lifecycle/lifecycle-viewmodel/gradle.properties	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
+@@ -0,0 +1,1 @@
++androidx.subVersionCheckEnabled=true
+\ No newline at end of file
+Index: lifecycle/lifecycle-runtime/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/lifecycle/lifecycle-runtime/build.gradle b/lifecycle/lifecycle-runtime/build.gradle
+--- a/lifecycle/lifecycle-runtime/build.gradle	(revision 52df94fef064edab6e331f3e7f13dd6483291499)
++++ b/lifecycle/lifecycle-runtime/build.gradle	(revision 07c43e935d78bd093b60a2087e8ddfc4c7ea2a97)
+@@ -22,6 +22,7 @@
+     mac()
+     linux()
+     ios()
++    ohosNative()
+ 
+     kotlin {
+         explicitApi = ExplicitApiMode.Strict
+@@ -34,17 +35,18 @@
+             dependencies {
+                 api(libs.kotlinStdlib)
+                 api(project(":lifecycle:lifecycle-common"))
+-                api("androidx.annotation:annotation:1.8.0")
++                api(libs.androidx.annotation)
+             }
+         }
+ 
+-        commonTest {
++        // :kruth:kruth un support ohosArm64
++        /*commonTest {
+             dependencies {
+                 implementation(libs.kotlinCoroutinesTest)
+                 implementation(libs.kotlinTest)
+                 implementation(project(":kruth:kruth"))
+             }
+-        }
++        }*/
+ 
+         jvmMain {
+             dependsOn(commonMain)
+@@ -57,11 +59,11 @@
+             dependsOn(jvmMain)
+         }
+ 
+-        desktopTest {
++        /*desktopTest {
+             dependencies {
+                 implementation(libs.kotlinCoroutinesSwing)
+             }
+-        }
++        }*/
+ 
+         androidMain {
+             dependsOn(jvmMain)
+@@ -72,15 +74,15 @@
+             }
+         }
+ 
+-        androidUnitTest {
++        /*androidUnitTest {
+             dependsOn(commonTest)
+             dependencies {
+                 implementation(libs.junit)
+                 implementation(libs.mockitoCore4)
+             }
+-        }
++        }*/
+ 
+-        androidInstrumentedTest {
++        /*androidInstrumentedTest {
+             dependsOn(commonTest)
+             dependencies {
+                 implementation(libs.junit)
+@@ -90,7 +92,7 @@
+                 implementation(libs.testRunner)
+                 implementation(libs.kotlinCoroutinesTest)
+             }
+-        }
++        }*/
+ 
+         nonJvmMain {
+             dependsOn(commonMain)
+@@ -103,9 +105,9 @@
+             languageSettings.optIn("kotlin.experimental.ExperimentalNativeApi")
+         }
+ 
+-        nativeTest {
++        /*nativeTest {
+             dependsOn(commonTest)
+-        }
++        }*/
+ 
+         targets.all { target ->
+             if (target.platformType == KotlinPlatformType.native) {
+@@ -115,9 +117,9 @@
+                     // Required for WeakReference usage
+                     languageSettings.optIn("kotlin.experimental.ExperimentalNativeApi")
+                 }
+-                target.compilations["test"].defaultSourceSet {
++                /*target.compilations["test"].defaultSourceSet {
+                     dependsOn(nativeTest)
+-                }
++                }*/
+             }
+         }
+     }
+Index: gradle/verification-metadata.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle/verification-metadata.xml b/gradle/verification-metadata.xml
+--- a/gradle/verification-metadata.xml	(revision 07c43e935d78bd093b60a2087e8ddfc4c7ea2a97)
++++ b/gradle/verification-metadata.xml	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -25,6 +25,10 @@
+          <trust file=".*[.]asc" regex="true"/>
+          <trust group="^androidx(?!\.compose.compiler\b)\..*" regex="true" reason="not signed yet"/>
+          <trust group="^com[.]android($|([.].*))" regex="true" reason="b/215430394"/>
++         <trust group="org.jetbrains.kotlin"/>
++         <trust group="org.jetbrains.kotlinx"/>
++          <trust group="org.jetbrains.kotlin.jvm"/>
++         <trust group="org.jetbrains.kotlin.plugin.serialization"/>
+       </trusted-artifacts>
+       <trusted-keys>
+          <trusted-key id="00089EE8C3AFA95A854D0F1DF800DD0933ECF7F7" group="com.google.guava"/>
+Index: lifecycle/lifecycle-runtime/src/commonMain/kotlin/androidx/lifecycle/LifecycleRegistry.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/lifecycle/lifecycle-runtime/src/commonMain/kotlin/androidx/lifecycle/LifecycleRegistry.kt b/lifecycle/lifecycle-runtime/src/commonMain/kotlin/androidx/lifecycle/LifecycleRegistry.kt
+--- a/lifecycle/lifecycle-runtime/src/commonMain/kotlin/androidx/lifecycle/LifecycleRegistry.kt	(revision 149c1a30f261096a50475095ddc733b8350afcfe)
++++ b/lifecycle/lifecycle-runtime/src/commonMain/kotlin/androidx/lifecycle/LifecycleRegistry.kt	(revision 7ae1ffdc4763d879df32d12ebe0c1404ff5a1a9f)
+@@ -15,6 +15,7 @@
+  */
+ package androidx.lifecycle
+ 
++import androidx.annotation.MainThread
+ import androidx.annotation.VisibleForTesting
+ import kotlin.jvm.JvmStatic
+ 
+@@ -37,6 +38,10 @@
+ constructor(provider: LifecycleOwner) : Lifecycle {
+     override var currentState: State
+ 
++    @MainThread override fun addObserver(observer: LifecycleObserver)
++
++    @MainThread override fun removeObserver(observer: LifecycleObserver)
++
+     /**
+      * Sets the current state and notifies the observers.
+      *
+Index: lifecycle/lifecycle-runtime/src/jvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.jvm.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/lifecycle/lifecycle-runtime/src/jvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.jvm.kt b/lifecycle/lifecycle-runtime/src/jvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.jvm.kt
+--- a/lifecycle/lifecycle-runtime/src/jvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.jvm.kt	(revision 149c1a30f261096a50475095ddc733b8350afcfe)
++++ b/lifecycle/lifecycle-runtime/src/jvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.jvm.kt	(revision 7ae1ffdc4763d879df32d12ebe0c1404ff5a1a9f)
+@@ -176,7 +176,8 @@
+      *
+      * @throws IllegalStateException if no event up from observer's initial state
+      */
+-    override fun addObserver(observer: LifecycleObserver) {
++    @MainThread
++    actual override fun addObserver(observer: LifecycleObserver) {
+         enforceMainThreadIfNeeded("addObserver")
+         val initialState = if (state == State.DESTROYED) State.DESTROYED else State.INITIALIZED
+         val statefulObserver = ObserverWithState(observer, initialState)
+@@ -215,7 +216,8 @@
+         parentStates.add(state)
+     }
+ 
+-    override fun removeObserver(observer: LifecycleObserver) {
++    @MainThread
++    actual override fun removeObserver(observer: LifecycleObserver) {
+         enforceMainThreadIfNeeded("removeObserver")
+         // we consciously decided not to send destruction events here in opposition to addObserver.
+         // Our reasons for that:
+Index: lifecycle/lifecycle-runtime/src/nonJvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.nonJvm.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/lifecycle/lifecycle-runtime/src/nonJvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.nonJvm.kt b/lifecycle/lifecycle-runtime/src/nonJvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.nonJvm.kt
+--- a/lifecycle/lifecycle-runtime/src/nonJvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.nonJvm.kt	(revision 149c1a30f261096a50475095ddc733b8350afcfe)
++++ b/lifecycle/lifecycle-runtime/src/nonJvmMain/kotlin/androidx/lifecycle/LifecycleRegistry.nonJvm.kt	(revision c7b3e61bcafe32a1e80b271c588b19923eff7e39)
+@@ -15,6 +15,7 @@
+  */
+ package androidx.lifecycle
+ 
++import androidx.annotation.MainThread
+ import androidx.annotation.VisibleForTesting
+ import kotlinx.coroutines.flow.MutableStateFlow
+ import kotlinx.coroutines.flow.StateFlow
+@@ -161,7 +162,8 @@
+      *
+      * @throws IllegalStateException if no event up from observer's initial state
+      */
+-    override fun addObserver(observer: LifecycleObserver) {
++    @MainThread
++    actual override fun addObserver(observer: LifecycleObserver) {
+         enforceMainThreadIfNeeded("addObserver")
+         val initialState = if (state == State.DESTROYED) State.DESTROYED else State.INITIALIZED
+         val statefulObserver = ObserverWithState(observer, initialState)
+@@ -199,7 +201,8 @@
+         parentStates.add(state)
+     }
+ 
+-    override fun removeObserver(observer: LifecycleObserver) {
++    @MainThread
++    actual override fun removeObserver(observer: LifecycleObserver) {
+         enforceMainThreadIfNeeded("removeObserver")
+         // we consciously decided not to send destruction events here in opposition to addObserver.
+         // Our reasons for that:
+Index: buildSrc/private/src/main/kotlin/androidx/build/AndroidXPlaygroundRootImplPlugin.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXPlaygroundRootImplPlugin.kt b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXPlaygroundRootImplPlugin.kt
+--- a/buildSrc/private/src/main/kotlin/androidx/build/AndroidXPlaygroundRootImplPlugin.kt	(revision b1f20f324a8adc439bbf4dcc58c1ea7253467e4c)
++++ b/buildSrc/private/src/main/kotlin/androidx/build/AndroidXPlaygroundRootImplPlugin.kt	(revision 3837081051529064da9b4f24789c67684e8c6bf1)
+@@ -142,6 +142,9 @@
+         google()
+         mavenCentral()
+         gradlePluginPortal()
++        maven {
++            it.url = URI("https://mirrors.tencent.com/nexus/repository/maven-public")
++        }
+     }
+ 
+     private class PlaygroundRepositories(props: PlaygroundProperties) {
+Index: buildSrc/private/src/main/kotlin/androidx/build/clang/KonanBuildService.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/private/src/main/kotlin/androidx/build/clang/KonanBuildService.kt b/buildSrc/private/src/main/kotlin/androidx/build/clang/KonanBuildService.kt
+--- a/buildSrc/private/src/main/kotlin/androidx/build/clang/KonanBuildService.kt	(revision b1f20f324a8adc439bbf4dcc58c1ea7253467e4c)
++++ b/buildSrc/private/src/main/kotlin/androidx/build/clang/KonanBuildService.kt	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -132,51 +132,45 @@
+      * @see ClangSharedLibraryTask
+      */
+     fun createSharedLibrary(parameters: ClangSharedLibraryParameters) {
+-        val outputFile = parameters.outputFile.get().asFile
+-        outputFile.delete()
+-        outputFile.parentFile.mkdirs()
+-
+-        val platform = getPlatform(parameters.konanTarget)
+-
+-        // Specify max-page-size to align ELF regions to 16kb
+-        val linkerFlags = if (parameters.konanTarget.get().asKonanTarget.family == Family.ANDROID) {
+-            listOf("-z", "max-page-size=16384")
+-        } else emptyList()
+-
+-        val objectFiles = parameters.objectFiles.regularFilePaths()
+-        val linkedObjectFiles = parameters.linkedObjects.regularFilePaths()
+-        val linkCommands = platform.linker.finalLinkCommands(
+-            objectFiles = objectFiles,
+-            executable = outputFile.canonicalPath,
+-            libraries = linkedObjectFiles,
+-            linkerArgs = linkerFlags,
+-            optimize = true,
+-            debug = false,
+-            kind = LinkerOutputKind.DYNAMIC_LIBRARY,
+-            outputDsymBundle = "unused",
+-            needsProfileLibrary = false,
+-            mimallocEnabled = false,
+-            sanitizer = null
+-        )
+-        linkCommands.map { it.argsWithExecutable }.forEach { args ->
+-            execOperations.executeSilently { execSpec ->
+-                execSpec.executable = args.first()
+-                args.drop(1).filterNot {
+-                    // TODO b/305804211 Figure out if we would rather pass all args manually
+-                    // We use the linker that konan uses to be as similar as possible but that
+-                    // linker also has konan demangling, which we don't need and not even available
+-                    // in the default distribution. Hence we remove that parameters.
+-                    // In the future, we can consider not using the `platform.linker` but then
+-                    // we would need to parse the konan.properties file to get the relevant
+-                    // necessary parameters like sysroot etc.
+-                    // https://github.com/JetBrains/kotlin/blob/master/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/KotlinNativeTest.kt#L536
+-                    it.contains("--defsym") ||
+-                        it.contains("Konan_cxa_demangle")
+-                }.forEach {
+-                    execSpec.args(it)
+-                }
+-            }
+-        }
++//        val outputFile = parameters.outputFile.get().asFile
++//        outputFile.delete()
++//        outputFile.parentFile.mkdirs()
++//
++//        val platform = getPlatform(parameters.konanTarget)
++//        val objectFiles = parameters.objectFiles.regularFilePaths()
++//        val linkedObjectFiles = parameters.linkedObjects.regularFilePaths()
++//        val linkCommands = platform.linker.finalLinkCommands(
++//            objectFiles = objectFiles,
++//            executable = outputFile.canonicalPath,
++//            libraries = linkedObjectFiles,
++//            linkerArgs = emptyList(),
++//            optimize = true,
++//            debug = false,
++//            kind = LinkerOutputKind.DYNAMIC_LIBRARY,
++//            outputDsymBundle = "unused",
++//            needsProfileLibrary = false,
++//            mimallocEnabled = false,
++//            sanitizer = null
++//        )
++//        linkCommands.map { it.argsWithExecutable }.forEach { args ->
++//            execOperations.executeSilently { execSpec ->
++//                execSpec.executable = args.first()
++//                args.drop(1).filterNot {
++//                    // TODO b/305804211 Figure out if we would rather pass all args manually
++//                    // We use the linker that konan uses to be as similar as possible but that
++//                    // linker also has konan demangling, which we don't need and not even available
++//                    // in the default distribution. Hence we remove that parameters.
++//                    // In the future, we can consider not using the `platform.linker` but then
++//                    // we would need to parse the konan.properties file to get the relevant
++//                    // necessary parameters like sysroot etc.
++//                    // https://github.com/JetBrains/kotlin/blob/master/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/KotlinNativeTest.kt#L536
++//                    it.contains("--defsym") ||
++//                        it.contains("Konan_cxa_demangle")
++//                }.forEach {
++//                    execSpec.args(it)
++//                }
++//            }
++//        }
+     }
+ 
+     private fun FileCollection.regularFilePaths(): List<String> {
+Index: buildSrc/shared.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/buildSrc/shared.gradle b/buildSrc/shared.gradle
+--- a/buildSrc/shared.gradle	(revision b1f20f324a8adc439bbf4dcc58c1ea7253467e4c)
++++ b/buildSrc/shared.gradle	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -34,7 +34,7 @@
+     kotlinOptions {
+         jvmTarget = "17"
+         freeCompilerArgs += [
+-                "-Werror",
++//                "-Werror",
+                 "-Xskip-metadata-version-check",
+                 "-Xjdk-release=17",
+         ]
+Index: collection/collection/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/collection/collection/build.gradle b/collection/collection/build.gradle
+--- a/collection/collection/build.gradle	(revision b1f20f324a8adc439bbf4dcc58c1ea7253467e4c)
++++ b/collection/collection/build.gradle	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -58,7 +58,7 @@
+             dependencies {
+                 implementation(libs.kotlinTest)
+                 implementation(libs.kotlinTestAnnotationsCommon)
+-                implementation(libs.kotlinCoroutinesCore)
++//                implementation(libs.kotlinCoroutinesCore)
+             }
+         }
+ 
+Index: lifecycle/lifecycle-viewmodel/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/lifecycle/lifecycle-viewmodel/build.gradle b/lifecycle/lifecycle-viewmodel/build.gradle
+--- a/lifecycle/lifecycle-viewmodel/build.gradle	(revision b1f20f324a8adc439bbf4dcc58c1ea7253467e4c)
++++ b/lifecycle/lifecycle-viewmodel/build.gradle	(revision 0221b6de1b2420b8e161baea34dd2abd4bda003e)
+@@ -55,7 +55,7 @@
+             dependencies {
+                 api("androidx.annotation:annotation:1.8.0")
+                 api(libs.kotlinStdlib)
+-                api(libs.kotlinCoroutinesCore)
++//                api(libs.kotlinCoroutinesCore)
+             }
+         }
+ 
+Index: playground-common/configure-plugin-management.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/playground-common/configure-plugin-management.gradle b/playground-common/configure-plugin-management.gradle
+--- a/playground-common/configure-plugin-management.gradle	(revision b1f20f324a8adc439bbf4dcc58c1ea7253467e4c)
++++ b/playground-common/configure-plugin-management.gradle	(revision 3837081051529064da9b4f24789c67684e8c6bf1)
+@@ -8,4 +8,7 @@
+     mavenCentral()
+     google()
+     gradlePluginPortal()
++    maven {
++        url = "https://mirrors.tencent.com/nexus/repository/maven-public"
++    }
+ }
