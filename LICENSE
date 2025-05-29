@@ -100,6 +100,10 @@ Please note this software has been modified by Tencent in this distribution.
 Copyright 2000-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
 Please note this software has been modified by Tencent in this distribution.
 
+8. atomic
+Copyright 2017 JetBrains s.r.o and respective authors and developers
+Please note this software has been modified by Tencent in this distribution.
+
 
 Terms of the Apache License Version 2.0:
 --------------------------------------------------------------------
@@ -174,6 +178,7 @@ A copy of the Apache 2.0 is included in this file.
 
 For the license of other third party components, please refer to the following URL:
 https://github.com/JetBrains/compose-multiplatform/tree/v1.6.1/license
+
 
 
 Open Source Software Licensed under the Apache License Version 2.0 and Other Licenses of the Third-Party Components therein:
