@@ -2,10 +2,10 @@
 
 # KuiklyBase-platform
 
-# 简介
-腾讯视频深度参与 Oteam 协同项目，共同推出 KuiklyBase 技术方案。该项目下的 platform 模块为已有组件在鸿蒙平台的适配，并对部分功能进行性能优化，帮助开发者提升开发效率。目前已覆盖10个基础组件，后续将逐步开源更多组件，持续完善技术生态。
+## 简介
+KuiklyBase是腾讯大前端Oteam推出，由腾讯视频、PCG端技术深度参与建设。该项目下的 platform 模块为已有组件在鸿蒙平台的适配，并对部分功能进行性能优化，帮助开发者提升开发效率。目前已覆盖10个基础组件，后续将逐步开源更多组件，持续完善技术生态。
 
-# 功能概述
+## 功能概述
 | 组件名 | 版本 | 开源时间 | 使用文档 |
 |-------|-------|----|-------|
 | [annotation](https://github.com/androidx/androidx) | 1.8.0 | 已开源 | [查看详情](androidx.annotation/README.md) |
@@ -19,5 +19,5 @@
 | serialization | / | 待定 | / |
 | datetime | / | 待定 | / |
 
-# License
-KuiklyBase-platform 基于 Apache 2.0 协议发布，详见：[License](License.txt)
+## License
+KuiklyBase-platform 基于 Apache 2.0 协议发布，详见：[License](License)
