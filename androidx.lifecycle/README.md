@@ -11,18 +11,18 @@ At first, clone google `AOSP` project in local:
 git clone https://android.googlesource.com/platform/frameworks/support
 ```
 
-checkout commit 06253a1d and create branch:
+checkout commit [7ad6b8bbf8fa3d5a3c97feca6c52a1a2bf98a622](https://android.googlesource.com/platform/frameworks/support/+/7ad6b8bbf8fa3d5a3c97feca6c52a1a2bf98a622) and create branch:
 
 ```
-git checkout 06253a1d
+git checkout 7ad6b8bbf8fa3d5a3c97feca6c52a1a2bf98a622
 ```
 
 ## 2. apply patch
 
-download [ov-androidx.lifecycle-2.8.0-ef320e8b.patch](ov-androidx.lifecycle-2.8.0-ef320e8b.patch) to local, and apply it:
+download [ov-androidx.lifecycle-2.8.0.patch](ov-androidx.lifecycle-2.8.0.patch) to local, and apply it:
 
 ```
-git apply ov-androidx.lifecycle-1.8.0-06253a1d.patch
+git apply ov-androidx.lifecycle-1.8.0.patch
 ```
 
 ## 3. maven configuration
