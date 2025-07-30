@@ -25,7 +25,7 @@ echo "Applying patches from $PATCH_DIR..."
 
 echo "Applying skia-pack"
 # Main patch application process
-( cd . && git apply "$PATCH_DIR/skia-pack.patch" ) || exit 1
+( cd . && git apply --exclude=README.md --exclude=script/checkout.py "$PATCH_DIR/skia-pack.patch" ) || exit 1
 
 echo "Applying skia"
 ( cd skia && git apply "$PATCH_DIR/skia.patch" ) || exit 1
